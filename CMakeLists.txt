@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Define the project name and C++ version
-project(MyRaylibGame VERSION 1.0)
+project(TrafficSimulator VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(raylib)
 
 # Create our game executable from our main.cpp file
-add_executable(MyRaylibGame src/main.cpp)
+add_executable(TrafficSimulator src/main.cpp)
 
 # Link our game executable against the raylib library
 # This ensures our code can find and use raylib's functions
-target_link_libraries(MyRaylibGame PRIVATE raylib)
+target_link_libraries(TrafficSimulator PRIVATE raylib)
