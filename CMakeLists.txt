@@ -7,12 +7,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Tell CMake to build the raylib library from the subdirectory
-# This makes the raylib targets available to our project
 add_subdirectory(raylib)
 
-# Create our game executable from our main.cpp file
-add_executable(TrafficSimulator src/main.cpp)
+# Create our game executable from all our source files
+add_executable(TrafficSimulator
+    src/main.cpp
+    src/Engine.cpp
+    src/Ball.cpp
+)
+
+# Tell our executable where to find its header files (the 'include' directory)
+target_include_directories(TrafficSimulator PRIVATE include)
 
 # Link our game executable against the raylib library
-# This ensures our code can find and use raylib's functions
 target_link_libraries(TrafficSimulator PRIVATE raylib)
