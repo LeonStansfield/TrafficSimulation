@@ -1,0 +1,43 @@
+#CMake generated files
+build/
+Build/
+build/
+CMakeCache.txt
+CMakeLists.txt.user
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+#Visual Studio Code specific files
+.vscode/
+
+#Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+#Precompiled Headers
+*.gch
+*.pch
+
+#Libraries and Executables
+*.lib
+*.a
+*.la
+*.lo
+*.dll
+*.so
+.so.
+*.dylib
+*.exe
+*.out
+*.app
+*.ipa
+
+#Crash Dumps
+*.dmp
