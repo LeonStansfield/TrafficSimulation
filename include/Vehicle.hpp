@@ -3,16 +3,17 @@
 #include "Object.hpp"
 #include "raylib.h"
 
-class Ball : public Object {
+class Vehicle : public Object {
 private:
     Vector2 position;
+    Vector2 size;
     Vector2 velocity;
-    float radius;
+    float speed;
     Color color;
 
 public:
     // Constructor
-    Ball(Vector2 pos, Vector2 vel, float r, Color c);
+    Vehicle(Vector2 pos, Vector2 sz, float spd, Color col);
 
     // Override the virtual functions from the Object base class
     void update() override;

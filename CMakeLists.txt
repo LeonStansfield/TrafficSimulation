@@ -6,18 +6,33 @@ project(TrafficSimulator VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Tell CMake to build the raylib library from the subdirectory
-add_subdirectory(raylib)
+# Add subdirectory for raylib
+add_subdirectory(libs/raylib)
 
-# Create our game executable from all our source files
+# Find dependencies for libosmium
+find_package(ZLIB REQUIRED)
+find_package(EXPAT REQUIRED)
+find_package(BZip2 REQUIRED)
+
+# Create executable
 add_executable(TrafficSimulator
     src/main.cpp
     src/Engine.cpp
-    src/Ball.cpp
+    src/Vehicle.cpp
+    src/Map.cpp
 )
 
-# Tell our executable where to find its header files (the 'include' directory)
-target_include_directories(TrafficSimulator PRIVATE include)
+# Tell our executable where to find its header files
+target_include_directories(TrafficSimulator PRIVATE
+    include
+    libs/libosmium/include
+    libs/protozero/include
+)
 
-# Link our game executable against the raylib library
-target_link_libraries(TrafficSimulator PRIVATE raylib)
+# Link our game executable against its libraries
+target_link_libraries(TrafficSimulator PRIVATE
+    raylib
+    ${ZLIB_LIBRARIES}
+    ${EXPAT_LIBRARIES}
+    ${BZIP2_LIBRARIES}
+)

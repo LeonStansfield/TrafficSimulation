@@ -1,20 +1,24 @@
 #include "Engine.hpp"
-#include "Ball.hpp"
+#include "Vehicle.hpp"
+#include "Map.hpp" // <-- Include the Map header
 #include <memory>
 
 int main() {
     // Create the engine
-    Engine engine(800, 600, "Traffic Simulation Engine");
+    Engine engine(800, 600, "Traffic Simulation Prototype");
+
+    // Load the map
+    engine.setMap(std::make_unique<Map>("data/map.osm"));
 
     // Create game objects and add them to the engine
-    engine.addObject(std::make_unique<Ball>(
-        Vector2{100, 100}, Vector2{3.0f, 2.5f}, 20.0f, BLUE
+    engine.addObject(std::make_unique<Vehicle>(
+        Vector2{100, 285}, Vector2{40, 20}, 2.0f, BLUE
     ));
-    engine.addObject(std::make_unique<Ball>(
-        Vector2{400, 200}, Vector2{-2.0f, 1.5f}, 15.0f, RED
+    engine.addObject(std::make_unique<Vehicle>(
+        Vector2{200, 285}, Vector2{40, 20}, 2.5f, RED
     ));
-    engine.addObject(std::make_unique<Ball>(
-        Vector2{600, 350}, Vector2{1.0f, -3.5f}, 25.0f, GREEN
+    engine.addObject(std::make_unique<Vehicle>(
+        Vector2{50, 315}, Vector2{40, 20}, 1.5f, GREEN
     ));
 
     // Run the main loop
