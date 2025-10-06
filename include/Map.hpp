@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include <vector>
 #include <map>
+#include <iostream>
 
 // A struct to hold road information
 struct Road {
@@ -13,7 +14,6 @@ class Map {
 private:
     std::map<long, Vector2> nodes;
     std::vector<Road> roads;
-    // Store the map's boundaries
     float minLat, maxLat, minLon, maxLon;
 
 
