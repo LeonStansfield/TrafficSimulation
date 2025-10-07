@@ -1,5 +1,10 @@
 #pragma once
 
+#if defined(_WIN32)
+    #define NOGDI             // All GDI defines and routines
+    #define NOUSER            // All USER defines and routines
+#endif
+
 #include "raylib.h"
 #include <vector>
 #include <map>

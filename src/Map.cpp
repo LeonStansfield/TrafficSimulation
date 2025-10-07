@@ -1,3 +1,8 @@
+#if defined(_WIN32)
+    #define NOGDI             // All GDI defines and routines
+    #define NOUSER            // All USER defines and routines
+#endif
+
 #include "Map.hpp"
 #include <osmium/io/any_input.hpp>
 #include <osmium/handler.hpp>
