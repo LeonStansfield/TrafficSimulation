@@ -12,13 +12,13 @@ int main() {
 
     // Create game objects and add them to the engine
     engine.addObject(std::make_unique<Vehicle>(
-        Vector2{40, 60}, Vector2{4, 2}, 2.0f, BLUE
+        Vector2{400, 300}, Vector2{4, 2}, 2.0f, BLUE
     ));
     engine.addObject(std::make_unique<Vehicle>(
-        Vector2{40, 80}, Vector2{4, 2}, 2.5f, RED
+        Vector2{400, 350}, Vector2{4, 2}, 2.5f, RED
     ));
     engine.addObject(std::make_unique<Vehicle>(
-        Vector2{40, 100}, Vector2{4, 2}, 1.5f, GREEN
+        Vector2{400, 400}, Vector2{4, 2}, 1.5f, GREEN
     ));
 
     // Run the main loop

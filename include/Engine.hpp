@@ -12,6 +12,7 @@ private:
     std::unique_ptr<Map> map;
     int screenWidth;
     int screenHeight;
+    Camera2D camera;
 
 public:
     // Constructor and Destructor

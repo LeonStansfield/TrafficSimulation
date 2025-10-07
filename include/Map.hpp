@@ -20,9 +20,13 @@ private:
     std::map<long, Vector2> nodes;
     std::vector<Road> roads;
     float minLat, maxLat, minLon, maxLon;
-
+    float worldWidth, worldHeight;
 
 public:
     Map(const char* filename);
     void draw();
+
+    float getWorldWidth() const { return worldWidth; }
+    float getWorldHeight() const { return worldHeight; }
+    Vector2 convertLatLonToWorld(Vector2 latLon);
 };
