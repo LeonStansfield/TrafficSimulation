@@ -4,24 +4,21 @@
 #include <memory>
 
 int main() {
-    // Create the engine
     Engine engine(800, 600, "Traffic Simulation Prototype");
 
-    // Load the map
-    engine.setMap(std::make_unique<Map>("../data/map.osm"));
+    auto map = std::make_unique<Map>("../data/map.osm");
+    engine.setMap(std::move(map));
 
-    // Create game objects and add them to the engine
-    engine.addObject(std::make_unique<Vehicle>(
-        Vector2{400, 300}, Vector2{4, 2}, 2.0f, BLUE
-    ));
-    engine.addObject(std::make_unique<Vehicle>(
-        Vector2{400, 350}, Vector2{4, 2}, 2.5f, RED
-    ));
-    engine.addObject(std::make_unique<Vehicle>(
-        Vector2{400, 400}, Vector2{4, 2}, 1.5f, GREEN
-    ));
+    Map* mapPtr = engine.getMap();
 
-    // Run the main loop
+    if (mapPtr) {
+        for (int i = 0; i < 5000; ++i) {
+            engine.addObject(std::make_unique<Vehicle>(
+                mapPtr, Vector2{1, 1}, 1.5f, BLUE
+            ));
+        }
+    }
+
     engine.run();
 
     return 0;

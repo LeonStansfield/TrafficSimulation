@@ -2,20 +2,26 @@
 
 #include "Object.hpp"
 #include "raylib.h"
+#include "Map.hpp"
+#include <vector>
 
 class Vehicle : public Object {
 private:
+    const Map* map;
     Vector2 position;
     Vector2 size;
     Vector2 velocity;
     float speed;
     Color color;
+    std::vector<Vector2> path;
+    int currentPathIndex;
 
 public:
-    // Constructor
-    Vehicle(Vector2 pos, Vector2 sz, float spd, Color col);
+    Vehicle(const Map* map, Vector2 sz, float spd, Color col);
 
-    // Override the virtual functions from the Object base class
     void update() override;
     void draw() override;
+
+private:
+    void findNewPath();
 };

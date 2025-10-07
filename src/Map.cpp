@@ -1,6 +1,6 @@
 #if defined(_WIN32)
-    #define NOGDI             // All GDI defines and routines
-    #define NOUSER            // All USER defines and routines
+    #define NOGDI
+    #define NOUSER
 #endif
 
 #include "Map.hpp"
@@ -10,19 +10,12 @@
 #include <limits>
 #include <iostream>
 #include <algorithm>
-#include <set>
+#include <random>
 
 class MapHandler : public osmium::handler::Handler {
 public:
     std::map<long, Vector2>& nodes;
     std::vector<Road>& roads;
-
-    // A set of highway tags that we consider drivable roads
-    const std::set<std::string> drivable_tags = {
-        "motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
-        "residential", "motorway_link", "trunk_link", "primary_link",
-        "secondary_link", "tertiary_link", "living_street", "service"
-    };
 
     MapHandler(std::map<long, Vector2>& n, std::vector<Road>& r)
         : nodes(n), roads(r) {}
@@ -35,10 +28,8 @@ public:
     }
 
     void way(const osmium::Way& way) {
-        const char* highway_tag = way.tags().get_value_by_key("highway");
-
-        // Only proceed if the highway tag exists and is in our set of drivable tags
-        if (highway_tag && drivable_tags.count(highway_tag)) {
+        const char* highway = way.tags().get_value_by_key("highway");
+        if (highway) {
             Road road;
             for (const auto& node_ref : way.nodes()) {
                 auto it = nodes.find(static_cast<long>(node_ref.ref()));
@@ -46,7 +37,6 @@ public:
                     road.points.push_back(it->second);
                 }
             }
-            // Only add the road if it has at least two points
             if (road.points.size() >= 2) {
                 roads.push_back(road);
             }
@@ -110,7 +100,7 @@ Map::Map(const char* filename) {
     }
 }
 
-Vector2 Map::convertLatLonToWorld(Vector2 latLon) {
+Vector2 Map::convertLatLonToWorld(Vector2 latLon) const {
     float lon_range = (maxLon - minLon);
     float lat_range = (maxLat - minLat);
     if (lon_range == 0 || lat_range == 0) {
@@ -139,4 +129,13 @@ void Map::draw() {
             DrawLineV(start_world, end_world, GRAY);
         }
     }
+}
+
+std::vector<Vector2> Map::getRandomRoad() const {
+    if (roads.empty()) {
+        return {};
+    }
+    static std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<size_t> dist(0, roads.size() - 1);
+    return roads[dist(rng)].points;
 }

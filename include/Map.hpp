@@ -1,8 +1,8 @@
 #pragma once
 
 #if defined(_WIN32)
-    #define NOGDI             // All GDI defines and routines
-    #define NOUSER            // All USER defines and routines
+    #define NOGDI
+    #define NOUSER
 #endif
 
 #include "raylib.h"
@@ -10,7 +10,6 @@
 #include <map>
 #include <iostream>
 
-// A struct to hold road information
 struct Road {
     std::vector<Vector2> points;
 };
@@ -28,5 +27,6 @@ public:
 
     float getWorldWidth() const { return worldWidth; }
     float getWorldHeight() const { return worldHeight; }
-    Vector2 convertLatLonToWorld(Vector2 latLon);
+    Vector2 convertLatLonToWorld(Vector2 latLon) const;
+    std::vector<Vector2> getRandomRoad() const;
 };
