@@ -10,17 +10,24 @@
 #include <limits>
 #include <iostream>
 #include <algorithm>
+#include <set>
 
 class MapHandler : public osmium::handler::Handler {
 public:
     std::map<long, Vector2>& nodes;
     std::vector<Road>& roads;
 
+    // A set of highway tags that we consider drivable roads
+    const std::set<std::string> drivable_tags = {
+        "motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
+        "residential", "motorway_link", "trunk_link", "primary_link",
+        "secondary_link", "tertiary_link", "living_street", "service"
+    };
+
     MapHandler(std::map<long, Vector2>& n, std::vector<Road>& r)
         : nodes(n), roads(r) {}
 
     void node(const osmium::Node& node) {
-        // Just store the node location, don't calculate boundaries here anymore
         nodes[static_cast<long>(node.id())] = {
             static_cast<float>(node.location().lat()),
             static_cast<float>(node.location().lon())
@@ -28,8 +35,10 @@ public:
     }
 
     void way(const osmium::Way& way) {
-        const char* highway = way.tags().get_value_by_key("highway");
-        if (highway) {
+        const char* highway_tag = way.tags().get_value_by_key("highway");
+
+        // Only proceed if the highway tag exists and is in our set of drivable tags
+        if (highway_tag && drivable_tags.count(highway_tag)) {
             Road road;
             for (const auto& node_ref : way.nodes()) {
                 auto it = nodes.find(static_cast<long>(node_ref.ref()));
@@ -53,13 +62,10 @@ Map::Map(const char* filename) {
 
     try {
         osmium::io::Reader reader{filename, osmium::io::read_meta::no};
-        // Pass only nodes and roads to the handler now
         MapHandler handler(nodes, roads);
         osmium::apply(reader, handler);
         reader.close();
 
-        // --- NEW: Calculate boundaries AFTER loading roads ---
-        // This ensures the boundary is based only on points that are actually used.
         for (const auto& road : roads) {
             for (const auto& point : road.points) {
                 float lat = point.x;
@@ -84,7 +90,6 @@ Map::Map(const char* filename) {
         std::cerr << "Error loading map data: " << e.what() << std::endl;
     }
 
-    // Correctly calculate world dimensions while preserving aspect ratio
     float lon_range = maxLon - minLon;
     float lat_range = maxLat - minLat;
 
@@ -94,7 +99,7 @@ Map::Map(const char* filename) {
         return;
     }
 
-    const float base_size = 1000.0f; // Define a base size for the longer dimension
+    const float base_size = 1000.0f;
 
     if (lon_range > lat_range) {
         worldWidth = base_size;
@@ -106,7 +111,6 @@ Map::Map(const char* filename) {
 }
 
 Vector2 Map::convertLatLonToWorld(Vector2 latLon) {
-    // Handle potential division by zero if map is a single point
     float lon_range = (maxLon - minLon);
     float lat_range = (maxLat - minLat);
     if (lon_range == 0 || lat_range == 0) {
@@ -121,16 +125,13 @@ Vector2 Map::convertLatLonToWorld(Vector2 latLon) {
 
 
 void Map::draw() {
-    // Draw the world boundary
     DrawRectangleLines(0, 0, static_cast<int>(worldWidth), static_cast<int>(worldHeight), RED);
 
-    // Draw a marker at the center
     float centerX = worldWidth / 2.0f;
     float centerY = worldHeight / 2.0f;
     DrawLine(centerX - 15, centerY, centerX + 15, centerY, YELLOW);
     DrawLine(centerX, centerY - 15, centerX, centerY + 15, YELLOW);
 
-    // Draw the roads
     for (const auto& road : roads) {
         for (size_t i = 1; i < road.points.size(); ++i) {
             Vector2 start_world = convertLatLonToWorld(road.points[i-1]);
