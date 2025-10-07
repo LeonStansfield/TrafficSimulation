@@ -38,6 +38,10 @@ compile_commands.json
 *.out
 *.app
 *.ipa
+libs/
+Libs/
+Libraries/
+libraries/
 
 #Crash Dumps
 *.dmp
