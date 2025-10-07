@@ -100,8 +100,8 @@ void Map::draw() {
     float scaledMapHeight = (maxLat - minLat) * scale;
 
     // Calculate the offsets to center the map on the screen
-    float offsetX = (static_cast<float>(screenWidth) - scaledMapWidth) / 2.0f;
-    float offsetY = (static_cast<float>(screenHeight) - scaledMapHeight) / 2.0f;
+    float offsetX = (static_cast<float>(screenWidth) - scaledMapWidth);
+    float offsetY = (static_cast<float>(screenHeight) - scaledMapHeight);
 
     for (const auto& road : roads) {
         for (size_t i = 1; i < road.points.size(); ++i) {
