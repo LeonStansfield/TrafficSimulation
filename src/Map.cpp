@@ -2,9 +2,9 @@
 #include <osmium/io/any_input.hpp>
 #include <osmium/handler.hpp>
 #include <osmium/visitor.hpp>
-#include <limits> // Required for numeric_limits
+#include <limits>
 #include <iostream>
-#include <algorithm> // Required for std::min
+#include <algorithm>
 
 class MapHandler : public osmium::handler::Handler {
 public:
@@ -19,11 +19,18 @@ public:
         : nodes(n), roads(r), minLat(minLat), maxLat(maxLat), minLon(minLon), maxLon(maxLon) {}
 
     void node(const osmium::Node& node) {
-        nodes[node.id()] = {(float)node.location().lat(), (float)node.location().lon()};
-        if (node.location().lat() < minLat) minLat = node.location().lat();
-        if (node.location().lat() > maxLat) maxLat = node.location().lat();
-        if (node.location().lon() < minLon) minLon = node.location().lon();
-        if (node.location().lon() > maxLon) maxLon = node.location().lon();
+        nodes[static_cast<long>(node.id())] = {
+            static_cast<float>(node.location().lat()),
+            static_cast<float>(node.location().lon())
+        };
+
+        float lat = static_cast<float>(node.location().lat());
+        float lon = static_cast<float>(node.location().lon());
+
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lon < minLon) minLon = lon;
+        if (lon > maxLon) maxLon = lon;
     }
 
     void way(const osmium::Way& way) {
@@ -31,7 +38,7 @@ public:
         if (highway) {
             Road road;
             for (const auto& node_ref : way.nodes()) {
-                auto it = nodes.find(node_ref.ref());
+                auto it = nodes.find(static_cast<long>(node_ref.ref()));
                 if (it != nodes.end()) {
                     road.points.push_back(it->second);
                 }
@@ -77,8 +84,8 @@ void Map::draw() {
     }
 
     // Calculate the scale factors to fit the map to the screen
-    float scaleX = (float)screenWidth / (maxLon - minLon);
-    float scaleY = (float)screenHeight / (maxLat - minLat);
+    float scaleX = static_cast<float>(screenWidth) / (maxLon - minLon);
+    float scaleY = static_cast<float>(screenHeight) / (maxLat - minLat);
 
     // Use the smaller scale factor to ensure the entire map is visible
     float scale = std::min(scaleX, scaleY);
@@ -88,8 +95,8 @@ void Map::draw() {
     float scaledMapHeight = (maxLat - minLat) * scale;
 
     // Calculate the offsets to center the map on the screen
-    float offsetX = (screenWidth - scaledMapWidth) / 2.0f;
-    float offsetY = (screenHeight - scaledMapHeight) / 2.0f;
+    float offsetX = (static_cast<float>(screenWidth) - scaledMapWidth) / 2.0f;
+    float offsetY = (static_cast<float>(screenHeight) - scaledMapHeight) / 2.0f;
 
     for (const auto& road : roads) {
         for (size_t i = 1; i < road.points.size(); ++i) {
