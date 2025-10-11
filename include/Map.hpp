@@ -10,7 +10,11 @@
 #include <map>
 #include <iostream>
 
-// A struct to hold road information
+struct Intersection {
+    long id;
+    Vector2 position;
+};
+
 struct Road {
     std::vector<Vector2> points;
 };
@@ -18,6 +22,7 @@ struct Road {
 class Map {
 private:
     std::map<long, Vector2> nodes;
+    std::map<long, Intersection> intersections;
     std::vector<Road> roads;
     float minLat, maxLat, minLon, maxLon;
     float worldWidth, worldHeight;

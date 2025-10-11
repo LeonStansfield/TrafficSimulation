@@ -2,6 +2,16 @@
 
 A traffic simulation engine using C++ and raylib for my final year university project.
 
+## Functionality
+
+* **`Engine`**:  initializes the window and the main simulation loop. It handles user input (panning and zooming), updates all simulation objects, and draws everything to the screen on each frame.
+
+* **`Map`**: The `Map` class loads and parses `.osm` files. It uses the libosmium library to read OSM data. It identifies all roads and the intersections that connect them, converting the latitude and longitude coordinates into a 2D world space measured in meters. This creates and stores a structured graph of the road network.
+
+* **`Intersection` and `Road`**:
+    * An `Intersection` is a point on the map where at least two roads meet.
+    * A `Road` is a path that connects two intersections. Each road consists of a series of points that define its shape.
+
 ## Setup & Compilation
 
 Clone the required libraries into the libs directory of the project.
@@ -60,3 +70,8 @@ Linux:
 
 Windows: 
 `.\Debug\TrafficSimulator.exe` or `.\Release\TrafficSimulator.exe`
+
+## Todo
+- Step one: Get vehicles spawning randomly on roads
+- Step two: Implement basic vehicle movement along roads
+- Step three: Implement more advanced vehicle behaviours (stopping and waiting at junctions and braking to stop behind other vehicles)

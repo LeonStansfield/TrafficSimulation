@@ -16,11 +16,9 @@ Engine::~Engine() {
 void Engine::setMap(std::unique_ptr<Map> newMap) {
     map = std::move(newMap);
     if (map) {
-        // Center the camera on the map
         camera.target = { map->getWorldWidth() / 2.0f, map->getWorldHeight() / 2.0f };
         camera.offset = { screenWidth / 2.0f, screenHeight / 2.0f };
 
-        // Set the camera zoom to fit the map in the screen
         float scaleX = static_cast<float>(screenWidth) / map->getWorldWidth();
         float scaleY = static_cast<float>(screenHeight) / map->getWorldHeight();
         camera.zoom = std::min(scaleX, scaleY);
@@ -33,14 +31,11 @@ void Engine::addObject(std::unique_ptr<Object> object) {
 
 void Engine::run() {
     while (!WindowShouldClose()) {
-        // --- Camera Controls ---
-        // Panning
         if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) camera.target.y -= 10.0f / camera.zoom;
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) camera.target.y += 10.0f / camera.zoom;
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) camera.target.x -= 10.0f / camera.zoom;
         if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) camera.target.x += 10.0f / camera.zoom;
 
-        // Zooming (towards mouse pointer)
         float wheel = GetMouseWheelMove();
         if (wheel != 0) {
             Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
@@ -51,7 +46,6 @@ void Engine::run() {
             if (camera.zoom < zoomIncrement) camera.zoom = zoomIncrement;
         }
 
-        // Reset Camera
         if (IsKeyPressed(KEY_R)) {
             if (map) {
                 camera.target = { map->getWorldWidth() / 2.0f, map->getWorldHeight() / 2.0f };
@@ -62,12 +56,10 @@ void Engine::run() {
             }
         }
 
-        // Update all objects
         for (const auto& obj : objects) {
             obj->update();
         }
 
-        // Draw all objects
         BeginDrawing();
         ClearBackground(DARKGRAY);
 
