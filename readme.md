@@ -66,10 +66,10 @@ Compile the Project:
 After a successful compilation, the executable will be located in the build directory.
 
 Linux: 
-`./TrafficSimulator`
+`./TrafficSimulator PathToOSMFile`
 
 Windows: 
-`.\Debug\TrafficSimulator.exe` or `.\Release\TrafficSimulator.exe`
+`.\Debug\TrafficSimulator.exe PathToOSMFile` or `.\Release\TrafficSimulator.exe PathToOSMFile`
 
 ## Todo
 - Step one: Get vehicles spawning randomly on roads
