@@ -34,6 +34,7 @@ void Engine::addObject(std::unique_ptr<Object> object) {
 
 void Engine::run() {
     while (!WindowShouldClose()) {
+        // Camera controls
         if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) camera.target.y -= 10.0f / camera.zoom;
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) camera.target.y += 10.0f / camera.zoom;
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) camera.target.x -= 10.0f / camera.zoom;
@@ -59,10 +60,12 @@ void Engine::run() {
             }
         }
 
+        // Update all objects
         for (const auto& obj : objects) {
             obj->update();
         }
 
+        // Draw all objects
         BeginDrawing();
         ClearBackground(DARKGRAY);
 
@@ -107,6 +110,6 @@ void Engine::spawnVehicles(int count) {
         float t = pos_dist(rng);
         Vector2 pos = { p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y) };
 
-        addObject(std::make_unique<Vehicle>(pos, Vector2{5, 5}, 50.0f, RED, &random_road));
+        addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get()));
     }
 }

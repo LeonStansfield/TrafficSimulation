@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <set>
 #include <cmath>
+#include <random>
 
 class MapHandler : public osmium::handler::Handler {
 public:
@@ -38,6 +39,14 @@ public:
         const char* highway_tag = way.tags().get_value_by_key("highway");
 
         if (highway_tag && drivable_tags.count(highway_tag)) {
+            // If it's a service road, check if it's a driveway. If so, skip it.
+            if (strcmp(highway_tag, "service") == 0) {
+                const char* service_tag = way.tags().get_value_by_key("service");
+                if (service_tag && strcmp(service_tag, "driveway") == 0) {
+                    return; // Skip this way
+                }
+            }
+
             std::vector<long> way_nodes;
             for (const auto& node_ref : way.nodes()) {
                 way_nodes.push_back(static_cast<long>(node_ref.ref()));
@@ -164,4 +173,43 @@ void Map::draw() {
 
 const std::vector<Road>& Map::getRoads() const {
     return roads;
+}
+
+
+const Road* Map::getClosestRoad(Vector2 position) const {
+    const Road* closestRoad = nullptr;
+    float minDistanceSq = std::numeric_limits<float>::max();
+
+    for (const auto& road : roads) {
+        for (const auto& point : road.points) {
+            float distSq = (point.x - position.x) * (point.x - position.x) + (point.y - position.y) * (point.y - position.y);
+            if (distSq < minDistanceSq) {
+                minDistanceSq = distSq;
+                closestRoad = &road;
+            }
+        }
+    }
+    return closestRoad;
+}
+
+const Road* Map::getRandomConnectedRoad(const Road& currentRoad, std::mt19937& rng) const {
+    if (roads.empty() || currentRoad.points.empty()) return nullptr;
+
+    Vector2 endPoint = currentRoad.points.back();
+    std::vector<const Road*> connectedRoads;
+
+    for (const auto& road : roads) {
+        if (&road == &currentRoad || road.points.empty()) continue;
+        // check if road starts where current ends
+        if (road.points.front().x == endPoint.x && road.points.front().y == endPoint.y) {
+            connectedRoads.push_back(&road);
+        }
+    }
+
+    if (connectedRoads.empty()) return nullptr;
+    if (connectedRoads.size() == 1) return connectedRoads.front();
+
+    // random selection using the passed-in generator
+    std::uniform_int_distribution<> dist(0, static_cast<int>(connectedRoads.size()) - 1);
+    return connectedRoads[dist(rng)];
 }

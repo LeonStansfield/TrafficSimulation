@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <limits>
+#include <random>
 
 struct Intersection {
     long id;
@@ -35,4 +37,6 @@ public:
     float getWorldHeight() const { return worldHeight; }
     Vector2 convertLatLonToWorld(Vector2 latLon);
     const std::vector<Road>& getRoads() const;
+    const Road* getClosestRoad(Vector2 position) const;
+    const Road* getRandomConnectedRoad(const Road& currentRoad, std::mt19937& rng) const;
 };
