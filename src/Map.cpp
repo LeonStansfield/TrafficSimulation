@@ -13,6 +13,7 @@
 #include <set>
 #include <cmath>
 #include <random>
+#include "raymath.h"
 
 class MapHandler : public osmium::handler::Handler {
 public:
@@ -192,24 +193,21 @@ const Road* Map::getClosestRoad(Vector2 position) const {
     return closestRoad;
 }
 
-const Road* Map::getRandomConnectedRoad(const Road& currentRoad, std::mt19937& rng) const {
-    if (roads.empty() || currentRoad.points.empty()) return nullptr;
+const Road* Map::getRandomConnectedRoad(const Road& currentRoad, const Vector2& endPoint, std::mt19937& rng) const {
+    if (roads.empty()) return nullptr;
 
-    Vector2 endPoint = currentRoad.points.back();
     std::vector<const Road*> connectedRoads;
 
     for (const auto& road : roads) {
         if (&road == &currentRoad || road.points.empty()) continue;
-        // check if road starts where current ends
-        if (road.points.front().x == endPoint.x && road.points.front().y == endPoint.y) {
+
+        if (Vector2Equals(road.points.front(), endPoint) || Vector2Equals(road.points.back(), endPoint)) {
             connectedRoads.push_back(&road);
         }
     }
 
     if (connectedRoads.empty()) return nullptr;
-    if (connectedRoads.size() == 1) return connectedRoads.front();
 
-    // random selection using the passed-in generator
     std::uniform_int_distribution<> dist(0, static_cast<int>(connectedRoads.size()) - 1);
     return connectedRoads[dist(rng)];
 }

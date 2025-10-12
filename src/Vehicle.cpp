@@ -119,23 +119,23 @@ void Vehicle::findNewPath() {
             currentPathIndex = 0;
         }
     } else { // Already on a road, find the next one
-        // Random road selection doesn't work well with dead ends as the vehicle always makes the same decision at a junction
-        // Unsure how to fix this as this should be a random decision but it is always picking the same result for a given node.
-        // How can this be fixed? Are we always using the same RNG state or seed leading to the same sequence?
+        const Vector2 endOfCurrentPath = path.back();
+        const Road* nextRoad = map->getRandomConnectedRoad(*road, endOfCurrentPath, gen);
 
-        // our RNG can't make a random choice if it's only ever given one option. Your current logic only finds roads that 
-        // start exactly where the current one ends. This is the root cause of the problem. How can we improve this?
-        const Road* nextRoad = map->getRandomConnectedRoad(*road, gen);
         if (nextRoad && !nextRoad->points.empty()) {
-            // Found a connecting road, switch to it
             road = nextRoad;
             path = road->points;
+
+            // Check if we need to reverse the new path
+            if (!Vector2Equals(path.front(), endOfCurrentPath)) {
+                // The new path must end where the old one ended. Reverse it.
+                std::reverse(path.begin(), path.end());
+            }
             currentPathIndex = 0;
         } else if (!path.empty()) {
             // This is a DEAD END. Turn around.
             std::reverse(path.begin(), path.end());
-            // Target the first point on the reversed path
-            currentPathIndex = 0; 
+            currentPathIndex = 0;
         }
     }
 

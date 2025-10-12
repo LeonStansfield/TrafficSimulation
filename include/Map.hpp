@@ -38,5 +38,5 @@ public:
     Vector2 convertLatLonToWorld(Vector2 latLon);
     const std::vector<Road>& getRoads() const;
     const Road* getClosestRoad(Vector2 position) const;
-    const Road* getRandomConnectedRoad(const Road& currentRoad, std::mt19937& rng) const;
+    const Road* getRandomConnectedRoad(const Road& currentRoad, const Vector2& endPoint, std::mt19937& rng) const;
 };
