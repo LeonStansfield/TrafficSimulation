@@ -1,4 +1,7 @@
 #include "Engine.hpp"
+#include "Vehicle.hpp"
+#include <random>
+#include <time.h>
 
 Engine::Engine(int width, int height, const char* title)
     : screenWidth(width), screenHeight(height), map(nullptr) {
@@ -74,5 +77,36 @@ void Engine::run() {
 
         DrawFPS(10, 10);
         EndDrawing();
+    }
+}
+
+void Engine::spawnVehicles(int count) {
+    if (!map) {
+        return;
+    }
+
+    const auto& roads = map->getRoads();
+    if (roads.empty()) {
+        return;
+    }
+
+    std::mt19937 rng(time(nullptr));
+    std::uniform_int_distribution<int> road_dist(0, roads.size() - 1);
+
+    for (int i = 0; i < count; ++i) {
+        const Road& random_road = roads[road_dist(rng)];
+        if (random_road.points.size() < 2) continue;
+
+        std::uniform_int_distribution<int> segment_dist(0, random_road.points.size() - 2);
+        int segment_index = segment_dist(rng);
+
+        Vector2 p1 = random_road.points[segment_index];
+        Vector2 p2 = random_road.points[segment_index + 1];
+
+        std::uniform_real_distribution<float> pos_dist(0.0f, 1.0f);
+        float t = pos_dist(rng);
+        Vector2 pos = { p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y) };
+
+        addObject(std::make_unique<Vehicle>(pos, Vector2{5, 5}, 50.0f, RED, &random_road));
     }
 }

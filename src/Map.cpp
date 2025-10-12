@@ -161,3 +161,7 @@ void Map::draw() {
         DrawCircleV(pair.second.position, 5.0f, BLUE);
     }
 }
+
+const std::vector<Road>& Map::getRoads() const {
+    return roads;
+}

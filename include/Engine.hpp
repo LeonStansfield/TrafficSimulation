@@ -23,4 +23,5 @@ public:
     void setMap(std::unique_ptr<Map> newMap);
     void addObject(std::unique_ptr<Object> object);
     void run();
+    void spawnVehicles(int count);
 };

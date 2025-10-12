@@ -34,4 +34,5 @@ public:
     float getWorldWidth() const { return worldWidth; }
     float getWorldHeight() const { return worldHeight; }
     Vector2 convertLatLonToWorld(Vector2 latLon);
+    const std::vector<Road>& getRoads() const;
 };
