@@ -13,11 +13,13 @@ private:
     Vector2 velocity;
     Color color;
 
-    // New Kinematic Properties
+    // Kinematic Properties
     float maxSpeed;
+    float minSpeed;
     float acceleration;
     float deceleration;
-    float turningSpeed;
+    float maxTurningSpeed;
+    float minTurningSpeed;
     float currentSpeed;
     Vector2 direction;
 

@@ -5,20 +5,31 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
-#include <algorithm>
+
+// Helper function to calculate the signed angle between two vectors
+static float GetRelativeAngle(Vector2 v1, Vector2 v2) {
+    float dot = v1.x * v2.x + v1.y * v2.y;
+    float det = v1.x * v2.y - v1.y * v2.x;
+    return atan2(det, dot);
+}
 
 Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
     : position(pos), size(sz), color(col), map(m), currentPathIndex(0), road(nullptr), targetPointIndex(0), gen(std::random_device{}()) {
 
-    std::uniform_real_distribution<> speed_dist(30.0f, 80.0f);     // Speed in meters/sec
-    std::uniform_real_distribution<> accel_dist(5.0f, 15.0f);      // m/s^2
-    std::uniform_real_distribution<> decel_dist(10.0f, 25.0f);     // m/s^2
-    std::uniform_real_distribution<> turning_dist(2.0f, 4.0f);     // Radians per second
+    std::uniform_real_distribution<> speed_dist(13.0f, 31.0f); // Speed range in m/s (approx. 30-70 mph)
+    std::uniform_real_distribution<> accel_dist(3.0f, 8.0f); // m/s^2
+    std::uniform_real_distribution<> decel_dist(5.0f, 15.0f); // m/s^2
+    std::uniform_real_distribution<> turning_dist(3.0f, 5.0f); // Radians per second
 
     maxSpeed = speed_dist(gen);
+    minSpeed = 4.5f; // Approx. 10 mph
     acceleration = accel_dist(gen);
     deceleration = decel_dist(gen);
-    turningSpeed = turning_dist(gen);
+
+    // Speed-Dependent Turning
+    maxTurningSpeed = turning_dist(gen);
+    minTurningSpeed = 1.5f;
+
     currentSpeed = 0.0f;
     velocity = { 0, 0 };
     direction = { 1, 0 }; // Default direction
@@ -27,75 +38,83 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
 }
 
 void Vehicle::update() {
-    if (path.empty() || currentPathIndex >= path.size()) {
+    if (path.empty() || currentPathIndex >= path.size() - 1) {
         findNewPath();
-        if (path.empty() || currentPathIndex >= path.size()) { // Re-check after finding new path
+        if (path.empty()) { // If still no path, stop the vehicle
             velocity = {0, 0};
             currentSpeed = 0;
             return;
         }
     }
 
+    // 1. Look-Ahead for Curvature Detection
+    float lookAheadDistance = std::max(50.0f, currentSpeed * 3.0f);
+    float totalAngleChange = 0.0f;
+    float distanceTraveled = 0.0f;
+
+    for (size_t i = currentPathIndex; i < path.size() - 2 && distanceTraveled < lookAheadDistance; ++i) {
+        Vector2 p1 = path[i];
+        Vector2 p2 = path[i+1];
+        Vector2 p3 = path[i+2];
+
+        Vector2 segment1 = Vector2Normalize(Vector2Subtract(p2, p1));
+        Vector2 segment2 = Vector2Normalize(Vector2Subtract(p3, p2));
+
+        totalAngleChange += std::abs(GetRelativeAngle(segment1, segment2));
+        distanceTraveled += Vector2Distance(p1, p2);
+    }
+
+    // 2. Determine Target Speed Based on Curvature
+    float curvature = (distanceTraveled > 0) ? totalAngleChange / distanceTraveled : 0;
+    float curvatureFactor = std::clamp(curvature * 10.0f, 0.0f, 1.0f);
+
+    float targetSpeed = maxSpeed - (maxSpeed - minSpeed) * curvatureFactor;
+
+    bool approachingEndOfRoad = (path.size() - currentPathIndex < 3) && (Vector2Distance(position, path.back()) < 80.0f);
+    if (approachingEndOfRoad) {
+        targetSpeed = std::min(targetSpeed, 10.0f);
+    }
+
+    // 3. Adjust Current Speed
+    if (currentSpeed < targetSpeed) {
+        currentSpeed += acceleration * GetFrameTime();
+        if (currentSpeed > targetSpeed) currentSpeed = targetSpeed;
+    } else if (currentSpeed > targetSpeed) {
+        currentSpeed -= deceleration * GetFrameTime();
+        if (currentSpeed < targetSpeed) currentSpeed = targetSpeed;
+    }
+    currentSpeed = std::clamp(currentSpeed, minSpeed, maxSpeed);
+
+    // 4. Dynamic Turning Speed based on Vehicle Speed
+    float speedT = (maxSpeed > minSpeed) ? (currentSpeed - minSpeed) / (maxSpeed - minSpeed) : 0.0f;
+    float currentTurningSpeed = maxTurningSpeed - speedT * (maxTurningSpeed - minTurningSpeed);
+
+    // Steering and Movement
     Vector2 target = path[currentPathIndex];
     Vector2 toTarget = Vector2Subtract(target, position);
     float distanceToTarget = Vector2Length(toTarget);
 
-    // Dynamic arrival radius, bigger for faster vehicles to prevent overshooting
-    float arrivalRadius = std::max(15.0f, currentSpeed * 0.4f);
-
-    if (distanceToTarget < arrivalRadius) {
+    float arrivalRadius = std::max(15.0f, currentSpeed * 0.5f);
+    if (distanceToTarget < arrivalRadius && currentPathIndex < path.size() - 1) {
         currentPathIndex++;
-        // If we've reached the end of the current road segment, find a new one
-        if (currentPathIndex >= path.size()) {
-            findNewPath();
-            // If findNewPath fails, exit to avoid accessing invalid memory
-            if (path.empty() || currentPathIndex >= path.size()) {
-                velocity = {0, 0};
-                currentSpeed = 0;
-                return;
-            }
-        }
-        // Update target for this frame to avoid a 1-frame lag
         target = path[currentPathIndex];
         toTarget = Vector2Subtract(target, position);
     }
 
     Vector2 desiredDirection = Vector2Normalize(toTarget);
-
-    // Steering logic
     float angle = atan2(desiredDirection.y, desiredDirection.x) - atan2(direction.y, direction.x);
     if (angle > PI) angle -= 2 * PI;
     if (angle < -PI) angle += 2 * PI;
 
-    float turn = turningSpeed * GetFrameTime();
+    float turn = currentTurningSpeed * GetFrameTime();
     angle = std::clamp(angle, -turn, turn);
 
     float currentAngle = atan2(direction.y, direction.x);
     currentAngle += angle;
-    direction = { cos(currentAngle), sin(currentAngle) };
+    direction = { cosf(currentAngle), sinf(currentAngle) };
 
-    // Check for sharp turns by comparing current direction with desired direction
-    float dot = (direction.x * desiredDirection.x) + (direction.y * desiredDirection.y);
-    bool sharpTurnAhead = (dot < 0.8f); // dot < 0.8 is roughly > 36 degree turn
-
-    // Check if we're approaching the final point on our current path
-    bool approachingEndOfRoad = (currentPathIndex == path.size() - 1) && (distanceToTarget < 100.0f);
-
-    if (sharpTurnAhead || approachingEndOfRoad) {
-        // Slow down for corners or junctions
-        currentSpeed -= deceleration * GetFrameTime();
-        if (currentSpeed < 15.0f) currentSpeed = 15.0f; // Minimum cornering speed
-    } else {
-        // Accelerate to max speed
-        if (currentSpeed < maxSpeed) {
-            currentSpeed += acceleration * GetFrameTime();
-            if (currentSpeed > maxSpeed) currentSpeed = maxSpeed;
-        }
-    }
-
-    velocity = { direction.x * currentSpeed, direction.y * currentSpeed };
-    position.x += velocity.x * GetFrameTime();
-    position.y += velocity.y * GetFrameTime();
+    velocity = Vector2Scale(direction, currentSpeed);
+    position = Vector2Add(position, Vector2Scale(velocity, GetFrameTime()));
 }
 
 void Vehicle::draw() {
@@ -126,9 +145,7 @@ void Vehicle::findNewPath() {
             road = nextRoad;
             path = road->points;
 
-            // Check if we need to reverse the new path
             if (!Vector2Equals(path.front(), endOfCurrentPath)) {
-                // The new path must end where the old one ended. Reverse it.
                 std::reverse(path.begin(), path.end());
             }
             currentPathIndex = 0;
@@ -139,8 +156,7 @@ void Vehicle::findNewPath() {
         }
     }
 
-    if (path.empty() || currentPathIndex >= path.size()) {
+    if (path.empty()) {
         road = nullptr;
-        path.clear();
     }
 }
