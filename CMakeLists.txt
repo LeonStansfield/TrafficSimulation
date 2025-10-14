@@ -44,6 +44,7 @@ target_link_libraries(TrafficSimulator PRIVATE
 # Add definitions and libraries needed for Windows
 if(WIN32)
     target_compile_definitions(TrafficSimulator PRIVATE
+        _USE_MATH_DEFINES
         _CRT_SECURE_NO_WARNINGS
         _CRT_NONSTDC_NO_DEPRECATE
         NOMINMAX

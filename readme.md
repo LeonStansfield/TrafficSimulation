@@ -12,6 +12,14 @@ A traffic simulation engine using C++ and raylib for my final year university pr
     * An `Intersection` is a point on the map where at least two roads meet.
     * A `Road` is a path that connects two intersections. Each road consists of a series of points that define its shape.
 
+* **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties, including maximum speed, acceleration, deceleration, and turning speed.
+
+    * When a vehicle is created, it finds the nearest road and creates a path to follow along that road's points.
+
+    * During each update, the vehicle calculates the distance and angle to the next point in its path and adjusts its direction and speed accordingly. It will slow down for sharp turns or when approaching the end of a road.
+
+    * When a vehicle reaches the end of its current road, it queries the Map to find a randomly connected road and generates a new path. If it reaches a dead end, it will  turn around.
+
 ## Setup & Compilation
 
 Clone the required libraries into the libs directory of the project.
