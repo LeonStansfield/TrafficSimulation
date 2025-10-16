@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "Object.hpp"
 #include "Map.hpp"
+#include "Quadtree.hpp"
 #include <vector>
 #include <memory>
 
@@ -13,6 +14,8 @@ private:
     int screenWidth;
     int screenHeight;
     Camera2D camera;
+    std::unique_ptr<Quadtree> quadtree;
+    bool debug;
 
 public:
     // Constructor and Destructor

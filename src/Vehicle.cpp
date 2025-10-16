@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "Map.hpp"
+#include "Quadtree.hpp"
 #include <cmath>
 #include <random>
 #include <algorithm>
@@ -38,6 +39,10 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
 }
 
 void Vehicle::update() {
+    // This is a placeholder to satisfy the override, but the main update logic is in update(Quadtree*)
+}
+
+void Vehicle::update(Quadtree* quadtree) {
     if (path.empty() || currentPathIndex >= path.size() - 1) {
         findNewPath();
         if (path.empty()) { // If still no path, stop the vehicle
@@ -47,7 +52,7 @@ void Vehicle::update() {
         }
     }
 
-    // 1. Look-Ahead for Curvature Detection
+    // Look-Ahead for Curvature Detection
     float lookAheadDistance = std::max(50.0f, currentSpeed * 3.0f);
     float totalAngleChange = 0.0f;
     float distanceTraveled = 0.0f;
@@ -64,18 +69,20 @@ void Vehicle::update() {
         distanceTraveled += Vector2Distance(p1, p2);
     }
 
-    // 2. Determine Target Speed Based on Curvature
+    // Determine Target Speed Based on Curvature
     float curvature = (distanceTraveled > 0) ? totalAngleChange / distanceTraveled : 0;
     float curvatureFactor = std::clamp(curvature * 10.0f, 0.0f, 1.0f);
 
     float targetSpeed = maxSpeed - (maxSpeed - minSpeed) * curvatureFactor;
 
+    // Check for nearby vehicles and adjust speed here
+    
     bool approachingEndOfRoad = (path.size() - currentPathIndex < 3) && (Vector2Distance(position, path.back()) < 80.0f);
     if (approachingEndOfRoad) {
         targetSpeed = std::min(targetSpeed, 10.0f);
     }
 
-    // 3. Adjust Current Speed
+    // Adjust Current Speed
     if (currentSpeed < targetSpeed) {
         currentSpeed += acceleration * GetFrameTime();
         if (currentSpeed > targetSpeed) currentSpeed = targetSpeed;
@@ -83,9 +90,9 @@ void Vehicle::update() {
         currentSpeed -= deceleration * GetFrameTime();
         if (currentSpeed < targetSpeed) currentSpeed = targetSpeed;
     }
-    currentSpeed = std::clamp(currentSpeed, minSpeed, maxSpeed);
+    currentSpeed = std::clamp(currentSpeed, 0.0f, maxSpeed);
 
-    // 4. Dynamic Turning Speed based on Vehicle Speed
+    // Dynamic Turning Speed based on Vehicle Speed
     float speedT = (maxSpeed > minSpeed) ? (currentSpeed - minSpeed) / (maxSpeed - minSpeed) : 0.0f;
     float currentTurningSpeed = maxTurningSpeed - speedT * (maxTurningSpeed - minTurningSpeed);
 
@@ -159,4 +166,8 @@ void Vehicle::findNewPath() {
     if (path.empty()) {
         road = nullptr;
     }
+}
+
+Vector2 Vehicle::getPosition() const {
+    return position;
 }

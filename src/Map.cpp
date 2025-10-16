@@ -163,7 +163,7 @@ void Map::draw() {
 
     for (const auto& road : roads) {
         for (size_t i = 1; i < road.points.size(); ++i) {
-            DrawLineV(road.points[i - 1], road.points[i], GRAY);
+            DrawLineV(road.points[i - 1], road.points[i], LIGHTGRAY);
         }
     }
 

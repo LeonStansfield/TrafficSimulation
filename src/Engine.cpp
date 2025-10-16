@@ -1,10 +1,11 @@
 #include "Engine.hpp"
 #include "Vehicle.hpp"
+#include "Quadtree.hpp"
 #include <random>
 #include <time.h>
 
 Engine::Engine(int width, int height, const char* title)
-    : screenWidth(width), screenHeight(height), map(nullptr) {
+    : screenWidth(width), screenHeight(height), map(nullptr), debug(false) {
     InitWindow(screenWidth, screenHeight, title);
     SetTargetFPS(60);
 
@@ -25,6 +26,8 @@ void Engine::setMap(std::unique_ptr<Map> newMap) {
         float scaleX = static_cast<float>(screenWidth) / map->getWorldWidth();
         float scaleY = static_cast<float>(screenHeight) / map->getWorldHeight();
         camera.zoom = std::min(scaleX, scaleY);
+
+        quadtree = std::make_unique<Quadtree>(Rectangle{0, 0, map->getWorldWidth(), map->getWorldHeight()}, 4);
     }
 }
 
@@ -60,9 +63,27 @@ void Engine::run() {
             }
         }
 
+        if (IsKeyPressed(KEY_Q)) {
+            debug = !debug;
+        }
+
+        // Rebuild the quadtree
+        quadtree->clear();
+        for (const auto& obj : objects) {
+            Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
+            if (v) {
+                quadtree->insert(v);
+            }
+        }
+
         // Update all objects
         for (const auto& obj : objects) {
-            obj->update();
+            Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
+            if (v) {
+                v->update(quadtree.get());
+            } else {
+                obj->update();
+            }
         }
 
         // Draw all objects
@@ -74,6 +95,9 @@ void Engine::run() {
             map->draw();
             for (const auto& obj : objects) {
                 obj->draw();
+            }
+            if (debug) {
+                quadtree->draw(camera);
             }
             EndMode2D();
         }

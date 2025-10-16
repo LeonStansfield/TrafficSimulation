@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 
+class Quadtree;
+
 class Vehicle : public Object {
 private:
     Vector2 position;
@@ -37,8 +39,11 @@ public:
     Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m);
 
     // Override the virtual functions from the Object base class
+    void update(Quadtree* quadtree);
     void update() override;
     void draw() override;
+
+    Vector2 getPosition() const;
 
 private:
     void findNewPath();
