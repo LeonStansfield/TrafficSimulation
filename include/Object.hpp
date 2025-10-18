@@ -7,5 +7,5 @@ public:
 
     // Pure virtual functions that all derived classes must implement.
     virtual void update() = 0;
-    virtual void draw() = 0;
+    virtual void draw(bool debug) = 0;
 };

@@ -94,7 +94,7 @@ void Engine::run() {
             BeginMode2D(camera);
             map->draw();
             for (const auto& obj : objects) {
-                obj->draw();
+                obj->draw(debug);
             }
             if (debug) {
                 quadtree->draw(camera);

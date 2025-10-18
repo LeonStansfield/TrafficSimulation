@@ -8,12 +8,20 @@
 
 class Quadtree;
 
+// Define the state machine enum
+enum class VehicleState {
+    DRIVING,
+    BRAKING,
+    WAITING_JUNCTION
+};
+
 class Vehicle : public Object {
 private:
     Vector2 position;
     Vector2 size;
     Vector2 velocity;
     Color color;
+    Color originalColor;
 
     // Kinematic Properties
     float maxSpeed;
@@ -30,9 +38,13 @@ private:
     std::vector<Vector2> path;
     int currentPathIndex;
 
+    bool isWaitingAtJunction;
+
     Map* map;
 
     std::mt19937 gen;
+
+    VehicleState state;
 
 public:
     // Constructor
@@ -41,9 +53,12 @@ public:
     // Override the virtual functions from the Object base class
     void update(Quadtree* quadtree);
     void update() override;
-    void draw() override;
+    void draw(bool debug) override;
 
     Vector2 getPosition() const;
+    Vector2 getDirection() const;
+    float getSpeed() const;
+    Vector2 getSize() const;
 
 private:
     void findNewPath();
