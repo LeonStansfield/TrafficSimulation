@@ -4,21 +4,33 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
 ## Functionality
 
-* **`Engine`**:  initializes the window and the main simulation loop. It handles user input (panning and zooming), updates all simulation objects, and draws everything to the screen on each frame.
+ * **`Engine`**: Initializes the window and the main simulation loop. It handles user input (panning and zooming), updates all simulation objects, and draws everything to the screen on each frame.
 
-* **`Map`**: The `Map` class loads and parses `.osm` files. It uses the libosmium library to read OSM data. It identifies all roads and the intersections that connect them, converting the latitude and longitude coordinates into a 2D world space measured in meters. This creates and stores a structured graph of the road network.
+    * **`Map`**: The Map class loads and parses .osm files using the libosmium library. It converts latitude and longitude coordinates into a 2D world space measured in meters.
 
-* **`Intersection` and `Road`**:
-    * An `Intersection` is a point on the map where at least two roads meet.
-    * A `Road` is a path that connects two intersections. Each road consists of a series of points that define its shape.
+        * **`Directed Graph`**: The map now parses OSM oneway tags to build a directed graph of the road network.
 
-* **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties, including maximum speed, acceleration, deceleration, and turning speed.
+        * **`Lane Generation`**: Roads marked as two-way are split into two separate, offset Road objects (one for each direction), creating realistic lanes. One-way roads are represented as a single directed Road.
 
-    * When a vehicle is created, it finds the nearest road and creates a path to follow along that road's points.
+        * **`Rendering`**: The map separates its simulation model from its rendering. The normal view draws clean, centered road lines with directional arrows (single for one-way, double for two-way). A debug view toggles drawing the actual offset paths that vehicles follow.
 
-    * During each update, the vehicle calculates the distance and angle to the next point in its path and adjusts its direction and speed accordingly. It will slow down for sharp turns or when approaching the end of a road.
+    * **`Intersection` and `Road`**:
 
-    * When a vehicle reaches the end of its current road, it queries the Map to find a randomly connected road and generates a new path. If it reaches a dead end, it will  turn around.
+        * An Intersection is a node in the graph, a point on the map where at least two roads meet.
+
+        * A Road is a directed edge in the graph. It stores a series of points representing the precise, offset path from a fromIntersectionId to a toIntersectionId.
+
+    * **`Quadtree`**: A Quadtree is used to spatially partition all vehicles in the simulation. This allows for highly efficient "look-ahead" queries for collision avoidance and junction checks. Instead of checking against every other vehicle, a vehicle only queries against those in its immediate vicinity.
+
+    * **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties (max speed, acceleration, etc.) and a state machine (DRIVING, BRAKING, WAITING_JUNCTION).
+
+        * **`Pathfinding`**: When a vehicle is created, it finds the nearest Road and snaps to its path. It follows this directed path to the end intersection. It then queries the Map's graph for a valid, randomly chosen outgoing road and continues, ensuring it always obeys road direction.
+
+        * **`Curvature Detection`**: Vehicles look ahead on their path and automatically slow down to a safe speed for sharp turns.
+
+        * **`Collision Avoidance`**: Using the Quadtree to limit the number of vehicles it will search through, a vehicle looks ahead for other vehicles on its path near its position. It calculates a safe following distance (based on speed and a time gap) and will brake to avoid a rear-end collision. This logic correctly ignores oncoming traffic, which is on a separate, parallel Road.
+
+        * **`Junction Logic`**: Vehicles detect when they are approaching an intersection. They query the Quadtree for other vehicles in the junction area. If the junction is busy with a conflicting vehicle, the vehicle enters a WAITING_JUNCTION state and stops until the path is clear.
 
 ## Setup & Compilation
 
@@ -80,6 +92,15 @@ Windows:
 `.\Debug\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)` or `.\Release\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)`
 
 ## Todo
-- Step one: Get vehicles spawning randomly on roads
-- Step two: Implement basic vehicle movement along roads
-- Step three: Implement more advanced vehicle behaviours (stopping and waiting at junctions and braking to stop behind other vehicles)
+Features:
+ - Implement vehicle wait at junction behavior
+ - Implement proper vehicle pathfinding to a destination (instead of random outgoing road)
+
+Bugs:
+ - Arrow drawing on roads currently not working
+ - Some service roads seem to exist according to the vehicles, but are not drawn on the map
+
+optimisations and improvements:
+ - Parallelize/optimise vehicle behavior
+ - Parallelize Quadtree
+ - Improve rendering by drawing in batches rather than each line and vehicle individually

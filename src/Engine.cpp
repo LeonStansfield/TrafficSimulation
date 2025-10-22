@@ -92,7 +92,7 @@ void Engine::run() {
 
         if (map) {
             BeginMode2D(camera);
-            map->draw();
+            map->draw(debug);
             for (const auto& obj : objects) {
                 obj->draw(debug);
             }
@@ -103,6 +103,7 @@ void Engine::run() {
         }
 
         DrawFPS(10, 10);
+        DrawText(debug ? "DEBUG VIEW" : "NORMAL VIEW", 10, 30, 20, DARKGREEN);
         EndDrawing();
     }
 }

@@ -52,6 +52,12 @@ void Vehicle::update(Quadtree* quadtree) {
             currentSpeed = 0;
             return;
         }
+        // If findNewPath() succeeded but path is *still* too small, return
+        if (path.size() < 2) {
+             velocity = {0, 0};
+             currentSpeed = 0;
+             return;
+        }
     }
 
     // Look-Ahead for Curvature Detection
@@ -118,6 +124,8 @@ void Vehicle::update(Quadtree* quadtree) {
             float directionDot = Vector2DotProduct(direction, otherVehicleDirection);
 
             // If directionDot > 0.5, they are generally going the same way.
+            // This logic now correctly ignores oncoming traffic, as they will
+            // be on a different road with an opposing direction vector.
             if (directionDot > 0.5f) {
                 closestDistSqr = distSqr;
                 leadVehicle = other;
@@ -143,58 +151,7 @@ void Vehicle::update(Quadtree* quadtree) {
         }
     }
 
-    // Begin Junction Logic
-    // Check if we are approaching the end of our current path
-    bool approachingJunction = (path.size() - currentPathIndex < 3) && (Vector2Distance(position, path.back()) < 60.0f);
-    float junctionCheckRadius = 30.0f;
-    Vector2 junctionPoint = path.back();
-
-    // If we are waiting, or if we are approaching and still moving
-    if (isWaitingAtJunction || (approachingJunction && currentSpeed > 0.1f)) {
-        if (!isWaitingAtJunction) {
-            isWaitingAtJunction = true; // We have arrived and must now check
-        }
-
-        Rectangle junctionArea = { 
-            junctionPoint.x - junctionCheckRadius, 
-            junctionPoint.y - junctionCheckRadius, 
-            junctionCheckRadius * 2, 
-            junctionCheckRadius * 2 
-        };
-        auto others = quadtree->query(junctionArea);
-        bool junctionBusy = false;
-
-        for (Vehicle* other : others) {
-            if (other == this) continue;
-
-            // Is another vehicle in the intersection?
-            if (Vector2DistanceSqr(other->getPosition(), junctionPoint) < junctionCheckRadius * junctionCheckRadius) {
-                // Check if they are on a crossing path (not parallel or anti-parallel)
-                Vector2 otherDir = other->getDirection();
-                Vector2 ourDir = Vector2Normalize(Vector2Subtract(junctionPoint, position));
-                float dot = Vector2DotProduct(otherDir, ourDir);
-
-                if (std::abs(dot) < 0.85f) {
-                    junctionBusy = true;
-                    break;
-                }
-            }
-        }
-
-        if (junctionBusy) {
-            targetSpeed = 0.0f; // Wait
-            state = VehicleState::WAITING_JUNCTION; // Override state
-        } else {
-            isWaitingAtJunction = false; // Clear to go
-            targetSpeed = std::min(targetSpeed, 10.0f); // Proceed slowly
-        }
-    } else if (approachingJunction) { // Approaching, but speed is 0
-        isWaitingAtJunction = true;
-        targetSpeed = 0.0f;
-        state = VehicleState::WAITING_JUNCTION; // Override state
-    } else {
-        isWaitingAtJunction = false; // Not at a junction
-    }
+    // Junction logic will go here but ignore for now
 
     // Adjust Current Speed
     if (currentSpeed < targetSpeed) {
@@ -272,29 +229,38 @@ void Vehicle::findNewPath() {
         road = map->getClosestRoad(position);
         if (road && !road->points.empty()) {
             path = road->points;
-            float distToStart = Vector2DistanceSqr(position, path.front());
-            float distToEnd = Vector2DistanceSqr(position, path.back());
-            if (distToEnd < distToStart) {
-                std::reverse(path.begin(), path.end());
+            
+            // Find the closest point on this new path to snap to
+            float minDistSq = FLT_MAX;
+            int closestIndex = 0;
+            for(int i = 0; i < path.size(); ++i) {
+                float distSq = Vector2DistanceSqr(position, path[i]);
+                if (distSq < minDistSq) {
+                    minDistSq = distSq;
+                    closestIndex = i;
+                }
             }
-            currentPathIndex = 0;
+            // Set the path index to the closest point found.
+            // The vehicle will now drive from this point to the end.
+            currentPathIndex = closestIndex;
+            // Snap the vehicle to the path
+            if (currentPathIndex < path.size()) {
+                 position = path[currentPathIndex]; 
+            }
         }
     } else { // Already on a road, find the next one
-        const Vector2 endOfCurrentPath = path.back();
-        const Road* nextRoad = map->getRandomConnectedRoad(*road, endOfCurrentPath, gen);
+        long endOfRoadIntersectionId = road->toIntersectionId;
+        const Road* nextRoad = map->getRandomOutgoingRoad(endOfRoadIntersectionId, gen);
 
         if (nextRoad && !nextRoad->points.empty()) {
             road = nextRoad;
             path = road->points;
-
-            if (!Vector2Equals(path.front(), endOfCurrentPath)) {
-                std::reverse(path.begin(), path.end());
-            }
+            // We ALWAYS start at the beginning of the new road
             currentPathIndex = 0;
-        } else if (!path.empty()) {
-            // This is a DEAD END. Turn around.
-            std::reverse(path.begin(), path.end());
-            currentPathIndex = 0;
+        } else {
+            // This is a DEAD END. Clear the path.
+            path.clear();
+            road = nullptr;
         }
     }
 
