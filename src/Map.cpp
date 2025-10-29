@@ -15,6 +15,7 @@
 #include <random>
 #include "raymath.h"
 #include <algorithm> // for std::min/max
+#include "rlgl.h" // <-- Add this include for batch rendering
 
 // Struct to hold temporary way data during parsing
 struct WayData {
@@ -111,7 +112,7 @@ static Vector2 GetClosestPointOnLineSegment(Vector2 point, Vector2 p1, Vector2 p
 }
 
 // Draws a small triangle arrow to indicate direction
-static void drawArrow(Vector2 midPoint, Vector2 direction, float size, Color color) {
+static void addArrowVerts(std::vector<Vector2>& verts, Vector2 midPoint, Vector2 direction, float size) {
     Vector2 p1 = Vector2Add(midPoint, Vector2Scale(direction, size / 2.0f)); // Arrow tip
     Vector2 normal = { -direction.y, direction.x };
     
@@ -121,7 +122,11 @@ static void drawArrow(Vector2 midPoint, Vector2 direction, float size, Color col
     Vector2 p3 = Vector2Subtract(midPoint, Vector2Scale(direction, size / 2.0f));
     p3 = Vector2Add(p3, Vector2Scale(normal, -size / 3.0f)); // Right base
     
-    DrawTriangle(p1, p2, p3, color);
+    // Add the two lines that form the arrow
+    verts.push_back(p1);
+    verts.push_back(p2);
+    verts.push_back(p1);
+    verts.push_back(p3);
 }
 
 Map::Map(const char* filename) {
@@ -288,58 +293,73 @@ void Map::draw(bool debug) {
         // DEBUG VIEW: Draw the *actual* vehicle paths (offset lines)
         for (const auto& road : roads) {
             Color roadColor = road.isOneWay ? ColorAlpha(SKYBLUE, 0.7f) : ColorAlpha(WHITE, 0.7f);
-            
             for (size_t i = 0; i < road.points.size(); ++i) {
-                // Draw dots for every point
                 DrawCircleV(road.points[i], 1.5f, roadColor);
-                
-                // Draw faint lines connecting them
                 if (i > 0) {
                     DrawLineV(road.points[i - 1], road.points[i], ColorAlpha(roadColor, 0.3f));
                 }
             }
         }
     } else {
-        // NORMAL VIEW: Draw individual road segments
+        // NORMAL VIEW: Batch render roads and arrows
+        std::vector<Vector2> roadLineVerts;
+        std::vector<Vector2> arrowLineVerts;
+
+        // Collect all vertices for roads and arrows
         for (const auto& pair : baseRoadSegments) {
             const std::vector<Vector2>& points = pair.second;
             bool isOneWay = baseSegmentOneWay.at(pair.first);
-            
-            Color roadColor = GRAY;
+
+            // Collect road segment vertices
             for (size_t i = 1; i < points.size(); ++i) {
-                DrawLineV(points[i - 1], points[i], roadColor);
+                roadLineVerts.push_back(points[i - 1]);
+                roadLineVerts.push_back(points[i]);
             }
 
-            // Draw direction arrows on top of the roads
+            // Collect arrow vertices
             if (points.size() >= 2) {
-                // Find the middle segment of the polyline
                 size_t midIndex = (points.size() - 1) / 2;
-                
                 Vector2 start = points[midIndex];
-                Vector2 end = points[midIndex + 1]; // Safe because points.size() >= 2
-                
+                Vector2 end = points[midIndex + 1];
                 Vector2 midPoint = Vector2Scale(Vector2Add(start, end), 0.5f);
                 Vector2 dir = Vector2Subtract(end, start);
 
-                // Check for zero-length segment
-                if (Vector2LengthSqr(dir) < 0.001f) {
-                    continue; // Skip arrow for tiny segments
-                }
+                if (Vector2LengthSqr(dir) < 0.001f) continue;
                 dir = Vector2Normalize(dir);
 
                 if (isOneWay) {
-                    // One-way: Draw one arrow in the center
-                    drawArrow(midPoint, dir, 8.0f, BLUE);
+                    addArrowVerts(arrowLineVerts, midPoint, dir, 8.0f);
                 } else {
-                    // Two-way: Draw two arrows, offset from the center
                     Vector2 normal = { -dir.y, dir.x };
                     Vector2 leftArrowPos = Vector2Add(midPoint, Vector2Scale(normal, 2.5f));
                     Vector2 rightArrowPos = Vector2Subtract(midPoint, Vector2Scale(normal, 2.5f));
-                    
-                    drawArrow(leftArrowPos, dir, 7.0f, BLUE);
-                    drawArrow(rightArrowPos, Vector2Scale(dir, -1.0f), 7.0f, BLUE);
+                    addArrowVerts(arrowLineVerts, leftArrowPos, dir, 7.0f);
+                    addArrowVerts(arrowLineVerts, rightArrowPos, Vector2Scale(dir, -1.0f), 7.0f);
                 }
             }
+        }
+
+        // Draw all collected vertices in two batches
+        rlDrawRenderBatchActive(); // Process any pending batches
+
+        // Batch draw roads
+        if (!roadLineVerts.empty()) {
+            rlBegin(RL_LINES);
+                rlColor4ub(GRAY.r, GRAY.g, GRAY.b, GRAY.a);
+                for (const auto& vert : roadLineVerts) {
+                    rlVertex2f(vert.x, vert.y);
+                }
+            rlEnd();
+        }
+
+        // Batch draw arrows
+        if (!arrowLineVerts.empty()) {
+            rlBegin(RL_LINES);
+                rlColor4ub(LIGHTGRAY.r, LIGHTGRAY.g, LIGHTGRAY.b, LIGHTGRAY.a);
+                for (const auto& vert : arrowLineVerts) {
+                    rlVertex2f(vert.x, vert.y);
+                }
+            rlEnd();
         }
     }
 

@@ -95,12 +95,11 @@ Windows:
 Features:
  - Implement vehicle wait at junction behavior
  - Implement proper vehicle pathfinding to a destination (instead of random outgoing road)
+ - Implement heatmap rendering of traffic speed
+ - Implement fast simulation mode (runs simulation as fast as possible, rather than in real-time)
 
 Bugs:
- - Arrow drawing on roads currently not working
- - Some service roads seem to exist according to the vehicles, but are not drawn on the map
 
 optimisations and improvements:
  - Parallelize/optimise vehicle behavior
  - Parallelize Quadtree
- - Improve rendering by drawing in batches rather than each line and vehicle individually

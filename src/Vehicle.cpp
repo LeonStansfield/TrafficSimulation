@@ -123,9 +123,7 @@ void Vehicle::update(Quadtree* quadtree) {
             Vector2 otherVehicleDirection = other->getDirection();
             float directionDot = Vector2DotProduct(direction, otherVehicleDirection);
 
-            // If directionDot > 0.5, they are generally going the same way.
-            // This logic now correctly ignores oncoming traffic, as they will
-            // be on a different road with an opposing direction vector.
+            // If directionDot > 0.5, they are going the same direction.
             if (directionDot > 0.5f) {
                 closestDistSqr = distSqr;
                 leadVehicle = other;
