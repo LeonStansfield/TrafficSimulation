@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cfloat>
 
-// Helper function to calculate the signed angle between two vectors
 static float GetRelativeAngle(Vector2 v1, Vector2 v2) {
     float dot = v1.x * v2.x + v1.y * v2.y;
     float det = v1.x * v2.y - v1.y * v2.x;
@@ -41,18 +40,79 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
 }
 
 void Vehicle::update() {
-    // This is a placeholder to satisfy the override, but the main update logic is in update(Quadtree*)
+    // This is a placeholder to satisfy the override
 }
 
 void Vehicle::update(Quadtree* quadtree) {
-    if (path.empty() || currentPathIndex >= path.size() - 1) {
+    if (!path.empty() && currentPathIndex >= path.size() - 1) {
+        
+        if (!isWaitingAtJunction) {
+            isWaitingAtJunction = true;
+            if (road) { 
+                long endOfRoadIntersectionId = road->toIntersectionId;
+                nextRoadToJoin = map->getRandomOutgoingRoad(endOfRoadIntersectionId, gen);
+            } else {
+                nextRoadToJoin = nullptr;
+            }
+        }
+        
+        state = VehicleState::WAITING_JUNCTION;
+        
+        if (nextRoadToJoin == nullptr) {
+            // Dead end
+            findNewPath();
+            velocity = {0, 0}; currentSpeed = 0; return;
+        }
+
+        // Check if it's safe to pull out.
+        bool safeToProceed = true;
+        float checkRadius = 30.0f; 
+        Vector2 junctionPos = path.back();
+        
+        Rectangle queryBox = { 
+            junctionPos.x - checkRadius, 
+            junctionPos.y - checkRadius, 
+            checkRadius * 2.0f, 
+            checkRadius * 2.0f 
+        };
+        auto nearby = quadtree->query(queryBox);
+
+        for (Vehicle* other : nearby) {
+            if (other == this) continue;
+
+            // Is this other vehicle on the road we want to join?
+            if (other->getRoad() == nextRoadToJoin && other->getSpeed() > 1.0f) {
+                safeToProceed = false;
+                break;
+            }
+        }
+
+        if (safeToProceed) {
+            // Proceed to find the next path.
+            isWaitingAtJunction = false;
+            findNewPath();
+            
+            // Check if dead end
+            if (path.empty()) { 
+                velocity = {0, 0};
+                currentSpeed = 0;
+                return;
+            }
+            if (path.size() < 2) {
+                 velocity = {0, 0};
+                 currentSpeed = 0;
+                 return;
+            }
+        }
+
+    } else if (path.empty()) {
+        // Path is empty (e.g., first run, or we came from a dead end)
         findNewPath();
         if (path.empty()) { // If still no path, stop the vehicle
             velocity = {0, 0};
             currentSpeed = 0;
             return;
         }
-        // If findNewPath() succeeded but path is *still* too small, return
         if (path.size() < 2) {
              velocity = {0, 0};
              currentSpeed = 0;
@@ -60,7 +120,8 @@ void Vehicle::update(Quadtree* quadtree) {
         }
     }
 
-    // Look-Ahead for Curvature Detection
+
+    // Look-Ahead for Curvature Detection (Unchanged)
     float lookAheadDistance = std::max(50.0f, currentSpeed * 3.0f);
     float totalAngleChange = 0.0f;
     float distanceTraveled = 0.0f;
@@ -77,23 +138,22 @@ void Vehicle::update(Quadtree* quadtree) {
         distanceTraveled += Vector2Distance(p1, p2);
     }
 
-    // Determine Target Speed Based on Curvature
+    // Determine Target Speed Based on Curvature (Unchanged)
     float curvature = (distanceTraveled > 0) ? totalAngleChange / distanceTraveled : 0;
     float curvatureFactor = std::clamp(curvature * 10.0f, 0.0f, 1.0f);
 
     float targetSpeed = maxSpeed - (maxSpeed - minSpeed) * curvatureFactor;
 
-    // State Setting
-    // Start by assuming we are driving, or braking for curvature
+    // State Setting (Unchanged)
     if (currentSpeed > targetSpeed) {
         state = VehicleState::BRAKING;
     } else {
         state = VehicleState::DRIVING;
     }
 
-    // Begin Collision Avoidance
-    float minGap = 8.0f; // Min distance between cars
-    float desiredTimeGap = 1.5f; // 1.5 seconds of travel time
+    // Begin Collision Avoidance (Unchanged)
+    float minGap = 8.0f; 
+    float desiredTimeGap = 1.5f;
     float vehicleLookAhead = std::max(minGap * 5.0f, currentSpeed * (desiredTimeGap + 1.0f));
     
     Rectangle queryBox = { 
@@ -116,14 +176,9 @@ void Vehicle::update(Quadtree* quadtree) {
         Vector2 otherDir = Vector2Normalize(toOther);
         float dot = Vector2DotProduct(direction, otherDir);
 
-        // Check if the other vehicle is strongly in front of us
         if (dot > 0.9 && distSqr < closestDistSqr) {
-            
-            // Check if they are also going (roughly) the same direction as us.
             Vector2 otherVehicleDirection = other->getDirection();
             float directionDot = Vector2DotProduct(direction, otherVehicleDirection);
-
-            // If directionDot > 0.5, they are going the same direction.
             if (directionDot > 0.5f) {
                 closestDistSqr = distSqr;
                 leadVehicle = other;
@@ -132,26 +187,44 @@ void Vehicle::update(Quadtree* quadtree) {
     }
 
     if (leadVehicle) {
-        // Calculate the gap from our front bumper to their-rear bumper
         float distance = sqrt(closestDistSqr) - (leadVehicle->getSize().x / 2.0f) - (size.x / 2.0f);
         float safeDistance = currentSpeed * desiredTimeGap + minGap;
 
         if (distance < safeDistance) {
-            // Adjust target speed based on lead vehicle
             float brakeSpeed = leadVehicle->getSpeed() + (distance - safeDistance) / desiredTimeGap;
             targetSpeed = std::min(targetSpeed, std::max(0.0f, brakeSpeed));
-            state = VehicleState::BRAKING; // Override state
+            state = VehicleState::BRAKING; 
         }
         
         if (distance < minGap) {
-            targetSpeed = std::min(targetSpeed, 0.0f); // Hard brake
-            state = VehicleState::BRAKING; // Override state
+            targetSpeed = std::min(targetSpeed, 0.0f);
+            state = VehicleState::BRAKING;
         }
     }
 
-    // Junction logic will go here but ignore for now
+    // Junction Logic
+    if (isWaitingAtJunction) {
+        // We are actively waiting. Force speed to 0, regardless of other factors.
+        targetSpeed = 0.0f;
+        state = VehicleState::WAITING_JUNCTION;
+    } 
+    else if (!path.empty() && currentPathIndex >= path.size() - 2) {
+        // We are *approaching* the junction (on the last segment).
+        float distanceToJunction = Vector2Distance(position, path.back());
+        
+        // Start slowing down based on speed
+        float junctionApproachDistance = std::max(30.0f, currentSpeed * 2.5f); 
+        
+        if (distanceToJunction < junctionApproachDistance) {
+            float junctionSlowSpeed = 8.0f; // ~18 mph
+            targetSpeed = std::min(targetSpeed, junctionSlowSpeed);
+            if (currentSpeed > targetSpeed) {
+                state = VehicleState::BRAKING; // Override state
+            }
+        }
+    }
 
-    // Adjust Current Speed
+    // Adjust Current Spee
     if (currentSpeed < targetSpeed) {
         currentSpeed += acceleration * GetFrameTime();
         if (currentSpeed > targetSpeed) currentSpeed = targetSpeed;

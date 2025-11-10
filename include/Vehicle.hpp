@@ -39,6 +39,7 @@ private:
     int currentPathIndex;
 
     bool isWaitingAtJunction;
+    const Road* nextRoadToJoin;
 
     Map* map;
 
@@ -59,6 +60,7 @@ public:
     Vector2 getDirection() const;
     float getSpeed() const;
     Vector2 getSize() const;
+    const Road* getRoad() const { return road; }
 
 private:
     void findNewPath();

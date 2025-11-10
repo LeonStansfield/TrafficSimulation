@@ -30,7 +30,7 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`Collision Avoidance`**: Using the Quadtree to limit the number of vehicles it will search through, a vehicle looks ahead for other vehicles on its path near its position. It calculates a safe following distance (based on speed and a time gap) and will brake to avoid a rear-end collision. This logic correctly ignores oncoming traffic, which is on a separate, parallel Road.
 
-        * **`Junction Logic`**: Vehicles detect when they are approaching an intersection. They query the Quadtree for other vehicles in the junction area. If the junction is busy with a conflicting vehicle, the vehicle enters a WAITING_JUNCTION state and stops until the path is clear.
+        * **`Junction Logic`**: Vehicles detect when they are approaching an intersection. They query the Quadtree for other vehicles in the junction area. If the junction is busy with another vehicle, the vehicle enters a WAITING_JUNCTION state and stops until the path is clear.
 
 ## Setup & Compilation
 
@@ -93,10 +93,14 @@ Windows:
 
 ## Todo
 Features:
- - Implement vehicle wait at junction behavior
  - Implement proper vehicle pathfinding to a destination (instead of random outgoing road)
  - Implement heatmap rendering of traffic speed
+ - Implement interactivity
+    - Click on road to view its stats (number of vehicles travelled on this road, average speed, etc)
+    - Click on vehicle to see its planned path
+    - Click on vehicle to see its stats (speed, direction, distance travelled, etc)
  - Implement fast simulation mode (runs simulation as fast as possible, rather than in real-time)
+    - Config file parsing?
 
 Bugs:
 
