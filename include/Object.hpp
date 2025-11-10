@@ -6,6 +6,6 @@ public:
     virtual ~Object() = default;
 
     // Pure virtual functions that all derived classes must implement.
-    virtual void update() = 0;
+    virtual void update(float deltaTime) = 0;
     virtual void draw(bool debug) = 0;
 };

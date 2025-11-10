@@ -88,15 +88,13 @@ Compile the Project:
 After a successful compilation, the executable will be located in the build directory.
 
 Linux: 
-`./TrafficSimulator PathToOSMFile(str) NumberOfVehicles(int)`
+`./TrafficSimulator PathToOSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
 
 Windows: 
-`.\Debug\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)` or `.\Release\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)`
+`.\Debug\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)` or `.\Release\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
 
 ## Todo
 Features:
- - Implement proper vehicle pathfinding to a destination (instead of random outgoing road)
- - Implement heatmap rendering of traffic speed
  - Implement interactivity
     - Click on road to view its stats (number of vehicles travelled on this road, average speed, etc)
     - Click on vehicle to see its planned path
@@ -104,8 +102,10 @@ Features:
  - Vehicle speed should be dependent on road type (read from OSM data?)
  - Implement fast simulation mode (runs simulation as fast as possible, rather than in real-time)
     - Config file parsing?
+ - Implement heatmap rendering of traffic speed
 
 Bugs:
+ - Fast simulation mode causes vehicles to end up off-road sometimes when fast mode ends.
 
 optimisations and improvements:
  - Parallelize/optimise vehicle behavior

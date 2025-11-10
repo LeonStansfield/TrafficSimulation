@@ -18,7 +18,7 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
     : position(pos), size(sz), color(col), originalColor(col), map(m), pathfinder(pf),
       currentPathRoadIndex(0), currentRoadPointIndex(0), 
       isWaitingAtJunction(false), state(VehicleState::DRIVING), gen(std::random_device{}()),
-      destinationIntersectionId(-1)
+      destinationIntersectionId(-1) 
 {
 
     std::uniform_real_distribution<> speed_dist(13.0f, 31.0f); // Speed range in m/s (approx. 30-70 mph)
@@ -66,11 +66,11 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
     }
 }
 
-void Vehicle::update() {
+void Vehicle::update(float deltaTime) {
     // This is a placeholder to satisfy the override
 }
 
-void Vehicle::update(Quadtree* quadtree) {
+void Vehicle::update(Quadtree* quadtree, float deltaTime) {
     // Path & Junction Logic
     // Check if we are at the end of the current road
     if (currentRoadPoints.empty() || currentRoadPointIndex >= currentRoadPoints.size() - 1) {
@@ -234,10 +234,10 @@ void Vehicle::update(Quadtree* quadtree) {
 
     // Adjust Current Speed
     if (currentSpeed < targetSpeed) {
-        currentSpeed += acceleration * GetFrameTime();
+        currentSpeed += acceleration * deltaTime;
         if (currentSpeed > targetSpeed) currentSpeed = targetSpeed;
     } else if (currentSpeed > targetSpeed) {
-        currentSpeed -= deceleration * GetFrameTime();
+        currentSpeed -= deceleration * deltaTime;
         if (currentSpeed < targetSpeed) currentSpeed = targetSpeed;
     }
     currentSpeed = std::clamp(currentSpeed, 0.0f, maxSpeed);
@@ -251,7 +251,7 @@ void Vehicle::update(Quadtree* quadtree) {
     Vector2 toTarget = Vector2Subtract(target, position);
     float distanceToTarget = Vector2Length(toTarget);
 
-    float arrivalRadius = std::max(15.0f, currentSpeed * 0.5f);
+    float arrivalRadius = 15.0f;
     if (distanceToTarget < arrivalRadius && currentRoadPointIndex < currentRoadPoints.size() - 1) {
         if (!isWaitingAtJunction || distanceToTarget < 5.0f) {
              currentRoadPointIndex++;
@@ -265,7 +265,7 @@ void Vehicle::update(Quadtree* quadtree) {
     if (angle > PI) angle -= 2 * PI;
     if (angle < -PI) angle += 2 * PI;
 
-    float turn = currentTurningSpeed * GetFrameTime();
+    float turn = currentTurningSpeed * deltaTime;
     angle = std::clamp(angle, -turn, turn);
 
     float currentAngle = atan2(direction.y, direction.x);
@@ -273,7 +273,7 @@ void Vehicle::update(Quadtree* quadtree) {
     direction = { cosf(currentAngle), sinf(currentAngle) };
 
     velocity = Vector2Scale(direction, currentSpeed);
-    position = Vector2Add(position, Vector2Scale(velocity, GetFrameTime()));
+    position = Vector2Add(position, Vector2Scale(velocity, deltaTime));
 }
 
 void Vehicle::draw(bool debug) {

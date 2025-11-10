@@ -5,10 +5,9 @@
 #include <time.h>
 
 Engine::Engine(int width, int height, const char* title)
-    : screenWidth(width), screenHeight(height), map(nullptr), debug(false) {
+    : screenWidth(width), screenHeight(height), map(nullptr), debug(false){
     InitWindow(screenWidth, screenHeight, title);
     SetTargetFPS(60);
-
     camera = { 0 };
     camera.zoom = 1.0f;
 }
@@ -26,15 +25,35 @@ void Engine::setMap(std::unique_ptr<Map> newMap) {
         float scaleX = static_cast<float>(screenWidth) / map->getWorldWidth();
         float scaleY = static_cast<float>(screenHeight) / map->getWorldHeight();
         camera.zoom = std::min(scaleX, scaleY);
-
+        
         quadtree = std::make_unique<Quadtree>(Rectangle{0, 0, map->getWorldWidth(), map->getWorldHeight()}, 4);
-
         pathfinder = std::make_unique<Pathfinder>(map.get());
     }
 }
 
 void Engine::addObject(std::unique_ptr<Object> object) {
     objects.push_back(std::move(object));
+}
+
+void Engine::updateSimulation(float deltaTime) {
+    // Rebuild the quadtree
+    quadtree->clear();
+    for (const auto& obj : objects) {
+        Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
+        if (v) {
+            quadtree->insert(v);
+        }
+    }
+
+    // Update all objects
+    for (const auto& obj : objects) {
+        Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
+        if (v) {
+            v->update(quadtree.get(), deltaTime);
+        } else {
+            obj->update(deltaTime);
+        }
+    }
 }
 
 void Engine::run() {
@@ -69,24 +88,8 @@ void Engine::run() {
             debug = !debug;
         }
 
-        // Rebuild the quadtree
-        quadtree->clear();
-        for (const auto& obj : objects) {
-            Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
-            if (v) {
-                quadtree->insert(v);
-            }
-        }
-
-        // Update all objects
-        for (const auto& obj : objects) {
-            Vehicle* v = dynamic_cast<Vehicle*>(obj.get());
-            if (v) {
-                v->update(quadtree.get());
-            } else {
-                obj->update();
-            }
-        }
+        // --- Call the refactored update logic ---
+        updateSimulation(GetFrameTime());
 
         // Draw all objects
         BeginDrawing();
@@ -108,6 +111,24 @@ void Engine::run() {
         DrawText(debug ? "DEBUG VIEW" : "NORMAL VIEW", 10, 30, 20, DARKGREEN);
         EndDrawing();
     }
+}
+
+void Engine::runFast(int ticks) {
+    if (!map) {
+         std::cerr << "Map is not set. Aborting fast run." << std::endl;
+         return;
+    }
+
+    // Use a fixed time step, e.g., 60 FPS
+    const float FIXED_DELTA_TIME = 1.0f / 60.0f;
+
+    for (int i = 0; i < ticks; ++i) {
+        if (i % (ticks / 100) == 0) {
+             std::cout << "\rSimulation progress: " << (i * 100 / ticks) << "%" << std::flush;
+        }
+        updateSimulation(FIXED_DELTA_TIME);
+    }
+    std::cout << "\rSimulation progress: 100%." << std::endl;
 }
 
 void Engine::spawnVehicles(int count) {
