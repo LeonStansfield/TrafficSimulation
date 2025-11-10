@@ -88,10 +88,32 @@ Compile the Project:
 After a successful compilation, the executable will be located in the build directory.
 
 Linux: 
-`./TrafficSimulator PathToOSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
+`./TrafficSimulator OSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
+
+`./TrafficSimulator ConfigFile(str)`
 
 Windows: 
-`.\Debug\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int)` or `.\Release\TrafficSimulator.exe PathToOSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
+`.\Debug\TrafficSimulator.exe OSMFile(str) NumberOfVehicles(int)` or `.\Release\TrafficSimulator.exe OSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
+
+`.\Debug\TrafficSimulator.exe ConfigFile(str)`
+
+Examples:
+
+`./TrafficSimulator -OSMFile ../data/StNewlynEastMap.osm -NumberOfVehicles 500 -FastSimulation true -SimulationTicks 2000`
+
+`./TrafficSimulator -ConfigFile ../data/config.txt`
+
+Example config file:
+```
+# Configuration File for TrafficSimulator
+# Lines starting with # are comments and will be ignored.
+# Keys and values are separated by '='.
+
+OSMFile = data/StNewlynEastMap.osm
+NumberOfVehicles = 500
+FastSimulation = true
+SimulationTicks = 20000
+```
 
 ## Todo
 Features:

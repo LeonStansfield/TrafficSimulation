@@ -1,0 +1,8 @@
+# Configuration File for TrafficSimulator
+# Lines starting with # are comments and will be ignored.
+# Keys and values are separated by '='.
+
+OSMFile = ../data/StNewlynEastMap.osm
+NumberOfVehicles = 500
+# FastSimulation = true
+# SimulationTicks = 2000
