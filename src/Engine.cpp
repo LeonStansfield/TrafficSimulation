@@ -28,6 +28,8 @@ void Engine::setMap(std::unique_ptr<Map> newMap) {
         camera.zoom = std::min(scaleX, scaleY);
 
         quadtree = std::make_unique<Quadtree>(Rectangle{0, 0, map->getWorldWidth(), map->getWorldHeight()}, 4);
+
+        pathfinder = std::make_unique<Pathfinder>(map.get());
     }
 }
 
@@ -109,7 +111,7 @@ void Engine::run() {
 }
 
 void Engine::spawnVehicles(int count) {
-    if (!map) {
+    if (!map || !pathfinder) {
         return;
     }
 
@@ -135,6 +137,6 @@ void Engine::spawnVehicles(int count) {
         float t = pos_dist(rng);
         Vector2 pos = { p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y) };
 
-        addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get()));
+        addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get(), pathfinder.get()));
     }
 }

@@ -3,12 +3,13 @@
 #include "Object.hpp"
 #include "raylib.h"
 #include "Map.hpp"
+#include "Pathfinder.hpp"
 #include <vector>
 #include <random>
 
 class Quadtree;
 
-// Define the state machine enum
+// State machine enum
 enum class VehicleState {
     DRIVING,
     BRAKING,
@@ -33,25 +34,22 @@ private:
     float currentSpeed;
     Vector2 direction;
 
-    const Road* road;
-    int targetPointIndex;
-    std::vector<Vector2> path;
-    int currentPathIndex;
-
+    Pathfinder* pathfinder;
+    long destinationIntersectionId;
+    std::vector<const Road*> currentPath;
+    int currentPathRoadIndex;
+    
+    std::vector<Vector2> currentRoadPoints;
+    int currentRoadPointIndex;
+    
     bool isWaitingAtJunction;
-    const Road* nextRoadToJoin;
-
     Map* map;
-
     std::mt19937 gen;
-
     VehicleState state;
 
 public:
-    // Constructor
-    Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m);
+    Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf);
 
-    // Override the virtual functions from the Object base class
     void update(Quadtree* quadtree);
     void update() override;
     void draw(bool debug) override;
@@ -60,8 +58,10 @@ public:
     Vector2 getDirection() const;
     float getSpeed() const;
     Vector2 getSize() const;
-    const Road* getRoad() const { return road; }
+    
+    const Road* getRoad() const;
 
 private:
-    void findNewPath();
+    void requestNewPath();
+    void startFollowingCurrentRoad();
 };

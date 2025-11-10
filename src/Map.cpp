@@ -14,8 +14,8 @@
 #include <cmath>
 #include <random>
 #include "raymath.h"
-#include <algorithm> // for std::min/max
-#include "rlgl.h" // <-- Add this include for batch rendering
+#include <algorithm>
+#include "rlgl.h"
 
 // Struct to hold temporary way data during parsing
 struct WayData {
@@ -71,6 +71,15 @@ public:
     }
 };
 
+// Helper function to calculate length of a polyline
+static float calculatePolylineLength(const std::vector<Vector2>& points) {
+    float length = 0.0f;
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+        length += Vector2Distance(points[i], points[i + 1]);
+    }
+    return length;
+}
+
 // Helper function to create an offset polyline for two-way roads
 static std::vector<Vector2> offsetPolyline(const std::vector<Vector2>& polyline, float offset) {
     if (polyline.size() < 2) return polyline;
@@ -94,6 +103,7 @@ static std::vector<Vector2> offsetPolyline(const std::vector<Vector2>& polyline,
     return offsetPoints;
 }
 
+// Helper function to find the closest point on a line segment to a given point
 static Vector2 GetClosestPointOnLineSegment(Vector2 point, Vector2 p1, Vector2 p2) {
     Vector2 segmentVec = Vector2Subtract(p2, p1);
     Vector2 toPointVec = Vector2Subtract(point, p1);
@@ -247,6 +257,8 @@ Map::Map(const char* filename) {
                 } else {
                     forward_road.points = base_points;
                 }
+
+                forward_road.length = calculatePolylineLength(forward_road.points);
                 roads.push_back(forward_road);
                 
                 // If it's not one-way, create the backward road
@@ -395,12 +407,11 @@ const Road* Map::getClosestRoad(Vector2 position) const {
     return closestRoad;
 }
 
-const Road* Map::getRandomOutgoingRoad(long fromIntersectionId, std::mt19937& rng) const {
-    auto it = outgoingRoads.find(fromIntersectionId);
-    if (it == outgoingRoads.end() || it->second.empty()) {
-        return nullptr; // No outgoing roads (dead end)
-    }
-
-    std::uniform_int_distribution<> dist(0, static_cast<int>(it->second.size()) - 1);
-    return it->second[dist(rng)];
+long Map::getRandomIntersectionId(std::mt19937& rng) const {
+    if (intersections.empty()) return -1;
+    
+    std::uniform_int_distribution<> dist(0, static_cast<int>(intersections.size()) - 1);
+    auto it = intersections.begin();
+    std::advance(it, dist(rng));
+    return it->first; // Return the ID
 }

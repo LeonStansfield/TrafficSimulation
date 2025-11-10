@@ -8,11 +8,11 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
     * **`Map`**: The Map class loads and parses .osm files using the libosmium library. It converts latitude and longitude coordinates into a 2D world space measured in meters.
 
-        * **`Directed Graph`**: The map now parses OSM oneway tags to build a directed graph of the road network.
+        * **`Directed Graph`**: The map parses OSM tags to build a directed graph of the road network.
 
         * **`Lane Generation`**: Roads marked as two-way are split into two separate, offset Road objects (one for each direction), creating realistic lanes. One-way roads are represented as a single directed Road.
 
-        * **`Rendering`**: The map separates its simulation model from its rendering. The normal view draws clean, centered road lines with directional arrows (single for one-way, double for two-way). A debug view toggles drawing the actual offset paths that vehicles follow.
+        * **`Rendering`**: The map has two rendering modes. The normal view draws centered road lines with directional arrows (single for one-way, double for two-way). A debug view toggles drawing the actual offset paths that vehicles follow.
 
     * **`Intersection` and `Road`**:
 
@@ -20,11 +20,13 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * A Road is a directed edge in the graph. It stores a series of points representing the precise, offset path from a fromIntersectionId to a toIntersectionId.
 
+    * **`Pathfinder`**: A class that encapsulates the pathfinding logic. It uses the A* search algorithm on the Map's directed graph to find the shortest path (by road length) between any two intersections.
+
     * **`Quadtree`**: A Quadtree is used to spatially partition all vehicles in the simulation. This allows for highly efficient "look-ahead" queries for collision avoidance and junction checks. Instead of checking against every other vehicle, a vehicle only queries against those in its immediate vicinity.
 
     * **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties (max speed, acceleration, etc.) and a state machine (DRIVING, BRAKING, WAITING_JUNCTION).
 
-        * **`Pathfinding`**: When a vehicle is created, it finds the nearest Road and snaps to its path. It follows this directed path to the end intersection. It then queries the Map's graph for a valid, randomly chosen outgoing road and continues, ensuring it always obeys road direction.
+        * **`Pathfinding`**: When a vehicle is created, it snaps to the nearest road. It requests a path from the Pathfinder class to a randomly selected destination intersection on the map. The vehicle receives a list of roads and follows them in sequence. Upon reaching its destination, it requests a new random path and repeats.
 
         * **`Curvature Detection`**: Vehicles look ahead on their path and automatically slow down to a safe speed for sharp turns.
 
@@ -99,6 +101,7 @@ Features:
     - Click on road to view its stats (number of vehicles travelled on this road, average speed, etc)
     - Click on vehicle to see its planned path
     - Click on vehicle to see its stats (speed, direction, distance travelled, etc)
+ - Vehicle speed should be dependent on road type (read from OSM data?)
  - Implement fast simulation mode (runs simulation as fast as possible, rather than in real-time)
     - Config file parsing?
 

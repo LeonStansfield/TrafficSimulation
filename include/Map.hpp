@@ -6,6 +6,7 @@
 #endif
 
 #include "raylib.h"
+#include "raymath.h"
 #include <vector>
 #include <map>
 #include <iostream>
@@ -18,10 +19,11 @@ struct Intersection {
 };
 
 struct Road {
-    long fromIntersectionId; // ID of the intersection it starts at
-    long toIntersectionId;   // ID of the intersection it ends at
-    std::vector<Vector2> points; // World-space points defining the path
-    bool isOneWay;           // Was this road originally a one-way?
+    long fromIntersectionId;
+    long toIntersectionId;
+    std::vector<Vector2> points;
+    bool isOneWay;
+    float length;
 };
 
 class Map {
@@ -45,7 +47,11 @@ public:
     float getWorldWidth() const { return worldWidth; }
     float getWorldHeight() const { return worldHeight; }
     Vector2 convertLatLonToWorld(Vector2 latLon);
+
     const std::vector<Road>& getRoads() const;
     const Road* getClosestRoad(Vector2 position) const;
-    const Road* getRandomOutgoingRoad(long fromIntersectionId, std::mt19937& rng) const;
+    
+    long getRandomIntersectionId(std::mt19937& rng) const;
+    const std::map<long, Intersection>& getIntersections() const { return intersections; }
+    const std::map<long, std::vector<const Road*>>& getOutgoingRoads() const { return outgoingRoads; }
 };
