@@ -26,6 +26,7 @@ private:
 
     // Kinematic Properties
     float maxSpeed;
+    float speedFactor; // Multiplier for road speed limit (e.g. 0.9 to 1.1)
     float minSpeed;
     float acceleration;
     float deceleration;

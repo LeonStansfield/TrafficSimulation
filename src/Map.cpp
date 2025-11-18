@@ -21,6 +21,7 @@
 struct WayData {
     std::vector<long> node_ids;
     bool isOneWay;
+    float speedLimit; // m/s
 };
 
 class MapHandler : public osmium::handler::Handler {
@@ -60,12 +61,48 @@ public:
             const char* oneway_tag = way.tags().get_value_by_key("oneway");
             bool oneWay = (oneway_tag && (strcmp(oneway_tag, "yes") == 0 || strcmp(oneway_tag, "1") == 0));
 
+            // Determine speed limit
+            float speedLimit = 13.4f; // Default ~30 mph
+            const char* maxspeed_tag = way.tags().get_value_by_key("maxspeed");
+            
+            if (maxspeed_tag) {
+                try {
+                    // Basic parsing for "50", "30 mph", etc.
+                    std::string speedStr(maxspeed_tag);
+                    if (speedStr.find("mph") != std::string::npos) {
+                        speedLimit = std::stof(speedStr) * 0.44704f;
+                    } else {
+                        // Assume km/h if just a number or "km/h"
+                        speedLimit = std::stof(speedStr) * 0.27778f;
+                    }
+                } catch (...) {
+                    // Fallback if parsing fails
+                }
+            } else {
+                // Infer from highway type
+                if (strcmp(highway_tag, "motorway") == 0 || strcmp(highway_tag, "motorway_link") == 0) {
+                    speedLimit = 31.3f; // ~70 mph
+                } else if (strcmp(highway_tag, "trunk") == 0 || strcmp(highway_tag, "trunk_link") == 0) {
+                    speedLimit = 26.8f; // ~60 mph
+                } else if (strcmp(highway_tag, "primary") == 0 || strcmp(highway_tag, "primary_link") == 0) {
+                    speedLimit = 22.35f; // ~50 mph
+                } else if (strcmp(highway_tag, "secondary") == 0 || strcmp(highway_tag, "secondary_link") == 0) {
+                    speedLimit = 17.88f; // ~40 mph
+                } else if (strcmp(highway_tag, "tertiary") == 0 || strcmp(highway_tag, "tertiary_link") == 0) {
+                    speedLimit = 13.4f; // ~30 mph
+                } else if (strcmp(highway_tag, "living_street") == 0) {
+                    speedLimit = 8.9f; // ~20 mph
+                } else {
+                    speedLimit = 13.4f; // Default ~30 mph for others
+                }
+            }
+
             std::vector<long> way_nodes;
             for (const auto& node_ref : way.nodes()) {
                 way_nodes.push_back(static_cast<long>(node_ref.ref()));
             }
             if (way_nodes.size() >= 2) {
-                ways.push_back({way_nodes, oneWay}); 
+                ways.push_back({way_nodes, oneWay, speedLimit}); 
             }
         }
     }
@@ -251,6 +288,7 @@ Map::Map(const char* filename) {
                 forward_road.fromIntersectionId = startNodeId;
                 forward_road.toIntersectionId = endNodeId;
                 forward_road.isOneWay = way.isOneWay;
+                forward_road.speedLimit = way.speedLimit;
                 
                 if (!way.isOneWay) {
                     forward_road.points = offsetPolyline(base_points, roadOffset);
@@ -267,6 +305,7 @@ Map::Map(const char* filename) {
                     backward_road.fromIntersectionId = endNodeId;
                     backward_road.toIntersectionId = startNodeId;
                     backward_road.isOneWay = false; // Part of two-way
+                    backward_road.speedLimit = way.speedLimit;
 
                     std::vector<Vector2> reversed_base_points = base_points;
                     std::reverse(reversed_base_points.begin(), reversed_base_points.end());
@@ -377,7 +416,7 @@ void Map::draw(bool debug) {
 
     // Draw intersections on top of everything
     for (const auto& pair : intersections) {
-        DrawCircleV(pair.second.position, 5.0f, BLUE);
+        DrawCircleV(pair.second.position, 3.0f, BLUE);
     }
 }
 

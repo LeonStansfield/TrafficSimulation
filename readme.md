@@ -10,6 +10,8 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`Directed Graph`**: The map parses OSM tags to build a directed graph of the road network.
 
+        * **`Speed Limits`**: The map parses `maxspeed` tags or infers speed limits based on `highway` types (e.g., motorway, residential) to assign appropriate speed limits to roads.
+
         * **`Lane Generation`**: Roads marked as two-way are split into two separate, offset Road objects (one for each direction), creating realistic lanes. One-way roads are represented as a single directed Road.
 
         * **`Rendering`**: The map has two rendering modes. The normal view draws centered road lines with directional arrows (single for one-way, double for two-way). A debug view toggles drawing the actual offset paths that vehicles follow.
@@ -24,7 +26,7 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
     * **`Quadtree`**: A Quadtree is used to spatially partition all vehicles in the simulation. This allows for highly efficient "look-ahead" queries for collision avoidance and junction checks. Instead of checking against every other vehicle, a vehicle only queries against those in its immediate vicinity.
 
-    * **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties (max speed, acceleration, etc.) and a state machine (DRIVING, BRAKING, WAITING_JUNCTION).
+    * **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties (max speed, acceleration, etc.) and a state machine (DRIVING, BRAKING, WAITING_JUNCTION). Vehicles respect the speed limits of the roads they are on, modulated by a randomized "speed factor" for realistic variation.
 
         * **`Pathfinding`**: When a vehicle is created, it snaps to the nearest road. It requests a path from the Pathfinder class to a randomly selected destination intersection on the map. The vehicle receives a list of roads and follows them in sequence. Upon reaching its destination, it requests a new random path and repeats.
 
@@ -125,11 +127,6 @@ SimulationTicks = 20000
 
 ## Todo
 Features:
- - Implement interactivity
-    - Click on road to view its stats (number of vehicles travelled on this road, average speed, etc)
-    - Click on vehicle to see its planned path
-    - Click on vehicle to see its stats (speed, direction, distance travelled, etc)
- - Vehicle speed should be dependent on road type (read speed limit from OSM data?)
  - Implement heatmap rendering of traffic speed
 
 Bugs:

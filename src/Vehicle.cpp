@@ -26,8 +26,10 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
     std::uniform_real_distribution<> accel_dist(3.0f, 8.0f); // m/s^2
     std::uniform_real_distribution<> decel_dist(5.0f, 15.0f); // m/s^2
     std::uniform_real_distribution<> turning_dist(3.0f, 5.0f); // Radians per second
+    std::uniform_real_distribution<> factor_dist(0.85f, 1.15f); // Speed factor
 
-    maxSpeed = speed_dist(gen);
+    speedFactor = factor_dist(gen);
+    maxSpeed = 13.4f; // Default fallback
     minSpeed = 4.5f; // Approx. 10 mph
     acceleration = accel_dist(gen);
     deceleration = decel_dist(gen);
@@ -55,6 +57,9 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
         }
         // Snap the vehicle to the path
         position = startRoad->points[closestIndex];
+        
+        // Set initial speed limit
+        maxSpeed = startRoad->speedLimit * speedFactor;
 
         // Set up a path
         requestNewPath();
@@ -336,6 +341,9 @@ void Vehicle::startFollowingCurrentRoad() {
 
     const Road* roadToFollow = currentPath[currentPathRoadIndex];
     
+    // Update max speed for this road
+    maxSpeed = roadToFollow->speedLimit * speedFactor;
+
     // Update Road Stats
     roadToFollow->stats.vehiclesPassed++;
 

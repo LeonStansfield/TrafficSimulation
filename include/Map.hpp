@@ -13,11 +13,10 @@
 #include <limits>
 #include <random>
 
-// --- Statistics Structures ---
 struct RoadStats {
-    long vehiclesPassed = 0;       // Total number of vehicles that have entered this road
-    double accumulatedSpeed = 0.0; // Sum of all speed samples (for average)
-    long speedSamples = 0;         // Number of samples taken
+    long vehiclesPassed = 0;
+    double accumulatedSpeed = 0.0;
+    long speedSamples = 0;
     
     float getAverageSpeed() const {
         return (speedSamples > 0) ? static_cast<float>(accumulatedSpeed / speedSamples) : 0.0f;
@@ -25,14 +24,13 @@ struct RoadStats {
 };
 
 struct IntersectionStats {
-    long vehiclesVisited = 0; // Number of vehicles that have routed through here
+    long vehiclesVisited = 0;
 };
-// -----------------------------
 
 struct Intersection {
     long id;
     Vector2 position;
-    mutable IntersectionStats stats; // Mutable to allow updates from const pointers
+    mutable IntersectionStats stats;
 };
 
 struct Road {
@@ -41,7 +39,8 @@ struct Road {
     std::vector<Vector2> points;
     bool isOneWay;
     float length;
-    mutable RoadStats stats; // Mutable to allow updates from const pointers
+    float speedLimit;
+    mutable RoadStats stats;
 };
 
 class Map {
