@@ -18,7 +18,8 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
     : position(pos), size(sz), color(col), originalColor(col), map(m), pathfinder(pf),
       currentPathRoadIndex(0), currentRoadPointIndex(0), 
       isWaitingAtJunction(false), state(VehicleState::DRIVING), gen(std::random_device{}()),
-      destinationIntersectionId(-1) 
+      destinationIntersectionId(-1),
+      accumulatedSpeed(0.0), speedSamples(0), timeActive(0.0f)
 {
 
     std::uniform_real_distribution<> speed_dist(13.0f, 31.0f); // Speed range in m/s (approx. 30-70 mph)
@@ -68,9 +69,28 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
 
 void Vehicle::update(float deltaTime) {
     // This is a placeholder to satisfy the override
+    updateStats(deltaTime);
+}
+
+void Vehicle::updateStats(float deltaTime) {
+    // Update internal vehicle stats
+    timeActive += deltaTime;
+    accumulatedSpeed += currentSpeed;
+    speedSamples++;
+
+    // Update road stats (if moving)
+    if (currentSpeed > 0.1f) {
+        const Road* currentRoad = getRoad();
+        if (currentRoad) {
+            currentRoad->stats.accumulatedSpeed += currentSpeed;
+            currentRoad->stats.speedSamples++;
+        }
+    }
 }
 
 void Vehicle::update(Quadtree* quadtree, float deltaTime) {
+    updateStats(deltaTime);
+
     // Path & Junction Logic
     // Check if we are at the end of the current road
     if (currentRoadPoints.empty() || currentRoadPointIndex >= currentRoadPoints.size() - 1) {
@@ -83,6 +103,14 @@ void Vehicle::update(Quadtree* quadtree, float deltaTime) {
         // We are at a junction, decide what to do
         if (currentPath.empty() || currentPathRoadIndex >= currentPath.size() - 1) {
             // We are at the end of our path (destination)
+            // Mark the intersection as visited
+            if (destinationIntersectionId != -1) {
+                const auto& intersections = map->getIntersections();
+                if (intersections.find(destinationIntersectionId) != intersections.end()) {
+                    intersections.at(destinationIntersectionId).stats.vehiclesVisited++;
+                }
+            }
+
             requestNewPath();
             if (currentRoadPoints.empty()) { // No new path found
                 velocity = {0, 0}; currentSpeed = 0; return;
@@ -307,6 +335,10 @@ void Vehicle::startFollowingCurrentRoad() {
     }
 
     const Road* roadToFollow = currentPath[currentPathRoadIndex];
+    
+    // Update Road Stats
+    roadToFollow->stats.vehiclesPassed++;
+
     currentRoadPoints = roadToFollow->points;
     currentRoadPointIndex = 0; // Always start at the beginning of the new road
 }
@@ -377,6 +409,10 @@ Vector2 Vehicle::getDirection() const {
 
 float Vehicle::getSpeed() const {
     return currentSpeed;
+}
+
+float Vehicle::getAverageSpeed() const {
+    return (speedSamples > 0) ? static_cast<float>(accumulatedSpeed / speedSamples) : 0.0f;
 }
 
 Vector2 Vehicle::getSize() const {

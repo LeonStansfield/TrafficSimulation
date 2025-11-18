@@ -34,6 +34,11 @@ private:
     float currentSpeed;
     Vector2 direction;
 
+    // Stats Tracking
+    double accumulatedSpeed;
+    long speedSamples;
+    float timeActive;
+
     Pathfinder* pathfinder;
     long destinationIntersectionId;
     std::vector<const Road*> currentPath;
@@ -58,10 +63,12 @@ public:
     Vector2 getDirection() const;
     float getSpeed() const;
     Vector2 getSize() const;
+    float getAverageSpeed() const;
     
     const Road* getRoad() const;
 
 private:
     void requestNewPath();
     void startFollowingCurrentRoad();
+    void updateStats(float deltaTime);
 };

@@ -26,7 +26,7 @@ struct WayData {
 class MapHandler : public osmium::handler::Handler {
 public:
     std::map<long, Vector2>& nodes;
-    std::vector<WayData>& ways; // Updated to use WayData
+    std::vector<WayData>& ways; 
 
     const std::set<std::string> drivable_tags = {
         "motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
@@ -65,7 +65,7 @@ public:
                 way_nodes.push_back(static_cast<long>(node_ref.ref()));
             }
             if (way_nodes.size() >= 2) {
-                ways.push_back({way_nodes, oneWay}); // Store WayData
+                ways.push_back({way_nodes, oneWay}); 
             }
         }
     }
@@ -140,7 +140,7 @@ static void addArrowVerts(std::vector<Vector2>& verts, Vector2 midPoint, Vector2
 }
 
 Map::Map(const char* filename) {
-    std::vector<WayData> ways_temp; // Use WayData
+    std::vector<WayData> ways_temp; 
 
     try {
         osmium::io::Reader reader{filename, osmium::io::read_meta::no};
@@ -156,7 +156,7 @@ Map::Map(const char* filename) {
     // Determine bounds from road nodes only
     std::set<long> road_node_ids;
     for (const auto& way : ways_temp) {
-        for (long node_id : way.node_ids) { // Updated
+        for (long node_id : way.node_ids) { 
             road_node_ids.insert(node_id);
         }
     }
@@ -185,8 +185,8 @@ Map::Map(const char* filename) {
     // Find intersections
     std::map<long, int> node_counts;
     for (const auto& way : ways_temp) {
-        for (size_t i = 0; i < way.node_ids.size(); ++i) { // Updated
-            node_counts[way.node_ids[i]]++; // Updated
+        for (size_t i = 0; i < way.node_ids.size(); ++i) { 
+            node_counts[way.node_ids[i]]++; 
         }
     }
 
@@ -198,11 +198,11 @@ Map::Map(const char* filename) {
 
     // Also add all way endpoints as intersections
     for (const auto& way : ways_temp) {
-        if(intersections.find(way.node_ids.front()) == intersections.end()){ // Updated
-             intersections[way.node_ids.front()] = {way.node_ids.front(), convertLatLonToWorld(nodes[way.node_ids.front()])}; // Updated
+        if(intersections.find(way.node_ids.front()) == intersections.end()){ 
+             intersections[way.node_ids.front()] = {way.node_ids.front(), convertLatLonToWorld(nodes[way.node_ids.front()])}; 
         }
-        if(intersections.find(way.node_ids.back()) == intersections.end()){ // Updated
-             intersections[way.node_ids.back()] = {way.node_ids.back(), convertLatLonToWorld(nodes[way.node_ids.back()])}; // Updated
+        if(intersections.find(way.node_ids.back()) == intersections.end()){ 
+             intersections[way.node_ids.back()] = {way.node_ids.back(), convertLatLonToWorld(nodes[way.node_ids.back()])}; 
         }
     }
 
@@ -405,6 +405,20 @@ const Road* Map::getClosestRoad(Vector2 position) const {
         }
     }
     return closestRoad;
+}
+
+const Intersection* Map::getClosestIntersection(Vector2 position) const {
+    const Intersection* closest = nullptr;
+    float minDistanceSq = std::numeric_limits<float>::max();
+
+    for (const auto& pair : intersections) {
+        float distSq = Vector2DistanceSqr(position, pair.second.position);
+        if (distSq < minDistanceSq) {
+            minDistanceSq = distSq;
+            closest = &pair.second;
+        }
+    }
+    return closest;
 }
 
 long Map::getRandomIntersectionId(std::mt19937& rng) const {

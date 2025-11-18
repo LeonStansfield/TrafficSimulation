@@ -3,6 +3,6 @@
 # Keys and values are separated by '='.
 
 OSMFile = ../data/StNewlynEastMap.osm
-NumberOfVehicles = 500
-# FastSimulation = true
-# SimulationTicks = 2000
+NumberOfVehicles = 50
+#FastSimulation = true
+#SimulationTicks = 9000

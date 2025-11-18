@@ -121,12 +121,11 @@ Features:
     - Click on road to view its stats (number of vehicles travelled on this road, average speed, etc)
     - Click on vehicle to see its planned path
     - Click on vehicle to see its stats (speed, direction, distance travelled, etc)
- - Vehicle speed should be dependent on road type (read from OSM data?)
- - Implement fast simulation mode (runs simulation as fast as possible, rather than in real-time)
-    - Config file parsing?
+ - Vehicle speed should be dependent on road type (read speed limit from OSM data?)
  - Implement heatmap rendering of traffic speed
 
 Bugs:
+ - Intersections are not counting vehicles passing them in their stats.
  - Fast simulation mode causes vehicles to end up off-road sometimes when fast mode ends.
 
 optimisations and improvements:
