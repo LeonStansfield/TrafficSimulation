@@ -13,13 +13,11 @@ Engine::Engine(int width, int height, const char* title)
     InitWindow(screenWidth, screenHeight, title);
     SetTargetFPS(60);
     
-    font = LoadFontEx("../data/Consolas-Regular.ttf", 32, 0, 0);
-    
+    // --- Font Loading ---
+    font = LoadFontEx("data/font.ttf", 32, 0, 0);
     if (font.texture.id == 0) {
-        // Fallback if file not found
         font = GetFontDefault();
     } else {
-        // Bilinear filtering makes scaling look better
         SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
     }
 
@@ -116,7 +114,7 @@ void Engine::run() {
             selectedRoad = nullptr;
 
             // 1. Try to select a vehicle
-            float searchRadius = 20.0f; // tolerance for clicking
+            float searchRadius = 20.0f; 
             Rectangle queryBox = { 
                 mouseWorldPos.x - searchRadius, mouseWorldPos.y - searchRadius, 
                 searchRadius * 2, searchRadius * 2 
@@ -138,7 +136,7 @@ void Engine::run() {
                 const Intersection* closestInt = map->getClosestIntersection(mouseWorldPos);
                 if (closestInt) {
                     float dist = Vector2Distance(closestInt->position, mouseWorldPos);
-                    if (dist < 20.0f) { // Tolerance
+                    if (dist < 20.0f) { 
                         selectedIntersection = closestInt;
                         selectionType = SelectionType::INTERSECTION;
                     }
@@ -149,7 +147,6 @@ void Engine::run() {
             if (selectionType == SelectionType::NONE && map) {
                 const Road* closestRoad = map->getClosestRoad(mouseWorldPos);
                 if (closestRoad && !closestRoad->points.empty()) {
-                    // Basic proximity check
                     bool inRange = false;
                     for (const auto& p : closestRoad->points) {
                         if (Vector2Distance(p, mouseWorldPos) < 50.0f) {
@@ -191,7 +188,28 @@ void Engine::run() {
                 DrawCircleV(selectedIntersection->position, 8.0f, highlightColor);
             } else if (selectionType == SelectionType::VEHICLE && selectedVehicle) {
                  const Vehicle* v = dynamic_cast<const Vehicle*>(selectedVehicle);
-                 if (v) DrawCircleV(v->getPosition(), v->getSize().x * 0.7f, highlightColor);
+                 if (v) {
+                     // Highlight Vehicle
+                     DrawCircleV(v->getPosition(), v->getSize().x * 0.7f, highlightColor);
+                     
+                     // Draw Path Highlight (Ghost Trail)
+                     const auto& path = v->getPath();
+                     int pathIndex = v->getPathIndex();
+                     
+                     Color pathColor = Fade(SKYBLUE, 0.3f);
+                     
+                     // Draw lines for all remaining roads in the path
+                     if (pathIndex >= 0 && pathIndex < static_cast<int>(path.size())) {
+                         for (size_t i = pathIndex; i < path.size(); ++i) {
+                             const Road* r = path[i];
+                             if (r && r->points.size() > 1) {
+                                 for (size_t j = 0; j < r->points.size() - 1; ++j) {
+                                     DrawLineEx(r->points[j], r->points[j+1], 3.0f, pathColor);
+                                 }
+                             }
+                         }
+                     }
+                 }
             }
 
             if (debug) {
@@ -212,12 +230,12 @@ void Engine::drawUI() {
     const int boxX = 20;
     const int boxY = 20;
     const int width = 260;
-    const int padding = 8;
-    const int lineSpacing = 24;
+    const int padding = 15;
+    const int lineSpacing = 24; 
     const float fontSize = 16.0f;
 
-    Color panelColor = { 20, 25, 30, 230 }; // Deep dark blue-gray
-    Color borderColor = { 60, 70, 80, 255 }; // Subtle border
+    Color panelColor = { 20, 25, 30, 230 }; 
+    Color borderColor = { 60, 70, 80, 255 }; 
     Color labelColor = GRAY;
     Color valueColor = RAYWHITE;
     Color accentColor = SKYBLUE;
@@ -226,13 +244,13 @@ void Engine::drawUI() {
     int contentHeight = 0;
     
     // System Status section height
-    contentHeight += 10 + 20; // Label + Value
+    contentHeight += 10 + 20; 
 
     // Selection section height
     if (selectionType != SelectionType::NONE) {
-        contentHeight += 15; // Spacer
-        contentHeight += 10 + 20; // Header
-        contentHeight += lineSpacing * 3; // Lines
+        contentHeight += 15; 
+        contentHeight += 10 + 20; 
+        contentHeight += lineSpacing * 3; 
     }
 
     int totalHeight = padding * 2 + contentHeight;
@@ -250,7 +268,7 @@ void Engine::drawUI() {
     };
 
     // --- System Status ---
-    drawText("View mode", cursorX, cursorY, fontSize, labelColor);
+    drawText("SIMULATION MODE", cursorX, cursorY, fontSize, labelColor);
     cursorY += 14;
     drawText(debug ? "DEBUG" : "NORMAL", cursorX, cursorY, fontSize, debug ? ORANGE : accentColor);
     cursorY += 28;
@@ -264,7 +282,7 @@ void Engine::drawUI() {
             const Vehicle* v = dynamic_cast<const Vehicle*>(selectedVehicle);
             drawText("SELECTED: VEHICLE", cursorX, cursorY, fontSize, labelColor); cursorY += 18;
             
-            drawText("Speed:", cursorX, cursorY, fontSize, labelColor);
+            drawText("Current Speed:", cursorX, cursorY, fontSize, labelColor);
             drawText(TextFormat("%.1f m/s", v->getSpeed()), cursorX + 100, cursorY - 2, fontSize, valueColor); 
             cursorY += lineSpacing;
 

@@ -62,10 +62,14 @@ public:
     Vector2 getPosition() const;
     Vector2 getDirection() const;
     float getSpeed() const;
-    Vector2 getSize() const;
     float getAverageSpeed() const;
+    Vector2 getSize() const;
     
     const Road* getRoad() const;
+    
+    // Path visualization getters
+    const std::vector<const Road*>& getPath() const;
+    int getPathIndex() const;
 
 private:
     void requestNewPath();

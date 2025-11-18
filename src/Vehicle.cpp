@@ -425,3 +425,11 @@ const Road* Vehicle::getRoad() const {
     }
     return currentPath[currentPathRoadIndex];
 }
+
+const std::vector<const Road*>& Vehicle::getPath() const {
+    return currentPath;
+}
+
+int Vehicle::getPathIndex() const {
+    return currentPathRoadIndex;
+}

@@ -34,6 +34,14 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`Junction Logic`**: Vehicles detect when they are approaching an intersection. They query the Quadtree for other vehicles in the junction area. If the junction is busy with another vehicle, the vehicle enters a WAITING_JUNCTION state and stops until the path is clear.
 
+    * **`Interactivity`**: The simulation allows users to interact with the environment using the mouse.
+
+        * **`Selection System`**: Users can click to select vehicles, roads, or intersections. A custom UI panel displays relevant statistics for the selected object, such as a vehicle's current and average speed, or a road's traffic count.
+
+        * **`Path Visualization`**: Selecting a vehicle renders its projected path as a ghost trail, visualizing the route it will take to its destination.
+
+        * **`Data Logging`**: Objects now persist statistical data. Roads record the volume and average speed of traffic, while intersections log the number of vehicles that have passed through.
+
 ## Setup & Compilation
 
 Clone the required libraries into the libs directory of the project.
