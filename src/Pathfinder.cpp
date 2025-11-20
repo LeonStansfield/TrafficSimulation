@@ -2,6 +2,10 @@
 #include "raymath.h"
 #include <map>
 #include <queue>
+#include "Pathfinder.hpp"
+#include "raymath.h"
+#include <map>
+#include <queue>
 #include <limits>
 #include <algorithm> // for std::reverse
 #include <iostream>
@@ -10,6 +14,7 @@ Pathfinder::Pathfinder(const Map* m) : map(m) {}
 
 // A* Implementation
 std::vector<const Road*> Pathfinder::findPath(long startIntersectionId, long endIntersectionId) {
+    std::cout << "Pathfinder::findPath " << startIntersectionId << " -> " << endIntersectionId << std::endl;
     if (!map) return {};
 
     auto& intersections = map->getIntersections();
@@ -48,7 +53,14 @@ std::vector<const Road*> Pathfinder::findPath(long startIntersectionId, long end
     openSet.push({ heuristic(startIntersectionId), startIntersectionId });
     cameFrom[startIntersectionId] = {-1, nullptr};
 
+    int iterations = 0;
     while (!openSet.empty()) {
+        iterations++;
+        if (iterations > 10000) {
+             std::cerr << "Pathfinder: Exceeded iteration limit! Possible infinite loop." << std::endl;
+             break;
+        }
+
         long currentId = openSet.top().second;
         openSet.pop();
 
@@ -63,6 +75,7 @@ std::vector<const Road*> Pathfinder::findPath(long startIntersectionId, long end
                 tempId = entry.first;
             }
             std::reverse(path.begin(), path.end());
+            std::cout << "Path found with " << path.size() << " steps." << std::endl;
             return path;
         }
 
@@ -84,5 +97,6 @@ std::vector<const Road*> Pathfinder::findPath(long startIntersectionId, long end
         }
     }
 
+    std::cout << "No path found." << std::endl;
     return {}; // No path found
 }

@@ -7,6 +7,7 @@
 #include <random>
 #include <algorithm>
 #include <cfloat>
+#include <iostream> // Added for debug prints
 
 static float GetRelativeAngle(Vector2 v1, Vector2 v2) {
     float dot = v1.x * v2.x + v1.y * v2.y;
@@ -21,6 +22,7 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf)
       destinationIntersectionId(-1),
       accumulatedSpeed(0.0), speedSamples(0), timeActive(0.0f)
 {
+    std::cout << "Vehicle constructor called" << std::endl;
 
     std::uniform_real_distribution<> speed_dist(13.0f, 31.0f); // Speed range in m/s (approx. 30-70 mph)
     std::uniform_real_distribution<> accel_dist(3.0f, 8.0f); // m/s^2
@@ -352,6 +354,7 @@ void Vehicle::startFollowingCurrentRoad() {
 }
 
 void Vehicle::requestNewPath() {
+    std::cout << "Vehicle requesting new path..." << std::endl;
     if (!map || !pathfinder) {
         currentRoadPoints.clear();
         currentPath.clear();

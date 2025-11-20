@@ -347,7 +347,9 @@ void Engine::spawnVehicles(int count) {
     std::mt19937 rng(time(nullptr));
     std::uniform_int_distribution<int> road_dist(0, roads.size() - 1);
 
+    std::cout << "Spawning " << count << " vehicles..." << std::endl;
     for (int i = 0; i < count; ++i) {
+        if (i % 10 == 0) std::cout << "Spawning vehicle " << i << std::endl;
         const Road& random_road = roads[road_dist(rng)];
         if (random_road.points.size() < 2) continue;
 
@@ -363,4 +365,5 @@ void Engine::spawnVehicles(int count) {
 
         addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get(), pathfinder.get()));
     }
+    std::cout << "Finished spawning vehicles." << std::endl;
 }
