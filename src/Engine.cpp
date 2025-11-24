@@ -43,7 +43,6 @@ void Engine::setMap(std::unique_ptr<Map> newMap) {
         camera.zoom = std::min(scaleX, scaleY);
         
         quadtree = std::make_unique<Quadtree>(Rectangle{0, 0, map->getWorldWidth(), map->getWorldHeight()}, 4);
-        pathfinder = std::make_unique<Pathfinder>(map.get());
     }
 }
 
@@ -191,24 +190,6 @@ void Engine::run() {
                  if (v) {
                      // Highlight Vehicle
                      DrawCircleV(v->getPosition(), v->getSize().x * 0.7f, highlightColor);
-                     
-                     // Draw Path Highlight (Ghost Trail)
-                     const auto& path = v->getPath();
-                     int pathIndex = v->getPathIndex();
-                     
-                     Color pathColor = Fade(SKYBLUE, 0.3f);
-                     
-                     // Draw lines for all remaining roads in the path
-                     if (pathIndex >= 0 && pathIndex < static_cast<int>(path.size())) {
-                         for (size_t i = pathIndex; i < path.size(); ++i) {
-                             const Road* r = path[i];
-                             if (r && r->points.size() > 1) {
-                                 for (size_t j = 0; j < r->points.size() - 1; ++j) {
-                                     DrawLineEx(r->points[j], r->points[j+1], 3.0f, pathColor);
-                                 }
-                             }
-                         }
-                     }
                  }
             }
 
@@ -335,7 +316,7 @@ void Engine::runFast(int ticks) {
 }
 
 void Engine::spawnVehicles(int count) {
-    if (!map || !pathfinder) {
+    if (!map) {
         return;
     }
 
@@ -361,6 +342,6 @@ void Engine::spawnVehicles(int count) {
         float t = pos_dist(rng);
         Vector2 pos = { p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y) };
 
-        addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get(), pathfinder.get()));
+        addObject(std::make_unique<Vehicle>(pos, Vector2{10, 10}, RED, map.get()));
     }
 }

@@ -3,9 +3,9 @@
 #include "Object.hpp"
 #include "raylib.h"
 #include "Map.hpp"
-#include "Pathfinder.hpp"
 #include <vector>
 #include <random>
+#include <cstdint>
 
 class Quadtree;
 
@@ -37,13 +37,12 @@ private:
 
     // Stats Tracking
     double accumulatedSpeed;
-    long speedSamples;
+    int64_t speedSamples;
     float timeActive;
 
-    Pathfinder* pathfinder;
-    long destinationIntersectionId;
-    std::vector<const Road*> currentPath;
-    int currentPathRoadIndex;
+    // Current road tracking
+    const Road* currentRoad;
+    int64_t targetIntersectionId;
     
     std::vector<Vector2> currentRoadPoints;
     int currentRoadPointIndex;
@@ -54,7 +53,7 @@ private:
     VehicleState state;
 
 public:
-    Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m, Pathfinder* pf);
+    Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m);
 
     void update(Quadtree* quadtree, float deltaTime);
     void update(float deltaTime) override;
@@ -67,13 +66,10 @@ public:
     Vector2 getSize() const;
     
     const Road* getRoad() const;
-    
-    // Path visualization getters
-    const std::vector<const Road*>& getPath() const;
-    int getPathIndex() const;
+    bool isActive() const { return true; }
 
 private:
-    void requestNewPath();
+    void selectRandomRoad();
     void startFollowingCurrentRoad();
     void updateStats(float deltaTime);
 };

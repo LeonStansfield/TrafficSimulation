@@ -5,7 +5,6 @@
 #include "Object.hpp"
 #include "Map.hpp"
 #include "Quadtree.hpp"
-#include "Pathfinder.hpp"
 #include "raylib.h"
 
 enum class SelectionType {
@@ -25,7 +24,6 @@ private:
     std::vector<std::unique_ptr<Object>> objects;
     std::unique_ptr<Map> map;
     std::unique_ptr<Quadtree> quadtree;
-    std::unique_ptr<Pathfinder> pathfinder;
 
     bool debug;
 
