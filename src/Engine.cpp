@@ -190,6 +190,36 @@ void Engine::run() {
                  if (v) {
                      // Highlight Vehicle
                      DrawCircleV(v->getPosition(), v->getSize().x * 0.7f, highlightColor);
+
+                     // Draw Path
+                     const auto& path = v->getPath();
+                     long currentId = v->getTargetIntersectionId();
+                     
+                     // Draw current road (optional, but good for context)
+                     const Road* currentRoad = v->getRoad();
+                     if (currentRoad) {
+                         for (size_t i = 0; i < currentRoad->points.size() - 1; ++i) {
+                             DrawLineEx(currentRoad->points[i], currentRoad->points[i+1], 3.0f, GREEN);
+                         }
+                     }
+
+                     const auto& outgoingRoads = map->getOutgoingRoads();
+                     
+                     for (long nextId : path) {
+                         // Find road from currentId to nextId
+                         if (outgoingRoads.find(currentId) != outgoingRoads.end()) {
+                             for (const Road* road : outgoingRoads.at(currentId)) {
+                                 if (road->toIntersectionId == nextId) {
+                                     // Draw this road
+                                     for (size_t i = 0; i < road->points.size() - 1; ++i) {
+                                         DrawLineEx(road->points[i], road->points[i+1], 3.0f, GREEN);
+                                     }
+                                     break; // Found the road
+                                 }
+                             }
+                         }
+                         currentId = nextId;
+                     }
                  }
             }
 

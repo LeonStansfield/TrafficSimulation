@@ -21,7 +21,7 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
       maxTurningSpeed(2.0f), minTurningSpeed(0.5f), currentSpeed(0.0f),
       direction({1, 0}), accumulatedSpeed(0), speedSamples(0), timeActive(0),
       currentRoad(nullptr), targetIntersectionId(-1), currentRoadPointIndex(0),
-      isWaitingAtJunction(false), state(VehicleState::DRIVING)
+      isWaitingAtJunction(false), state(VehicleState::DRIVING), finalDestinationId(-1)
 {
     // Initialize random engine with a random seed
     std::random_device rd;
@@ -71,6 +71,10 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m)
         }
 
         startFollowingCurrentRoad();
+        
+        // Plan initial path
+        requestNewPath();
+
     } else {
         currentSpeed = 0.0f;
         velocity = { 0, 0 };
@@ -116,8 +120,8 @@ void Vehicle::update(Quadtree* quadtree, float deltaTime) {
             }
         }
 
-        // Select a random road to follow
-        selectRandomRoad();
+        // Select next road to follow
+        selectRandomRoad(); // This now handles path following
         
         if (currentRoadPoints.empty()) {
             velocity = {0, 0}; 
@@ -298,6 +302,20 @@ void Vehicle::draw(bool debug) {
     DrawLineEx(position, Vector2Add(position, Vector2Scale(direction, 15.0f)), 2.0f, BLACK);
 }
 
+void Vehicle::requestNewPath() {
+    if (!map) return;
+    
+    // Pick a random destination intersection
+    finalDestinationId = map->getRandomIntersectionId(gen);
+    
+    // Plan path from current target intersection to destination
+    if (targetIntersectionId != -1 && finalDestinationId != -1) {
+        path = Pathfinder::findPath(map, targetIntersectionId, finalDestinationId);
+    } else {
+        path.clear();
+    }
+}
+
 void Vehicle::selectRandomRoad() {
     if (!map) {
         currentRoadPoints.clear();
@@ -318,7 +336,34 @@ void Vehicle::selectRandomRoad() {
         }
     }
 
-    // Get roads from current intersection
+    // Check if we need a new path
+    if (path.empty()) {
+        requestNewPath();
+    }
+
+    // Try to follow the path
+    if (!path.empty()) {
+        long nextIntersectionId = path.front();
+        
+        // Find the road that connects targetIntersectionId to nextIntersectionId
+        auto it = outgoingRoads.find(targetIntersectionId);
+        if (it != outgoingRoads.end()) {
+            for (const Road* road : it->second) {
+                if (road->toIntersectionId == nextIntersectionId) {
+                    currentRoad = road;
+                    path.pop_front(); // Remove the node we are about to travel to
+                    targetIntersectionId = currentRoad->toIntersectionId;
+                    startFollowingCurrentRoad();
+                    return;
+                }
+            }
+        }
+        
+        // If we are here, it means the path is invalid (road not found), so clear it and fall back
+        path.clear();
+    }
+
+    // Fallback: Randomly select one of the outgoing roads
     auto it = outgoingRoads.find(targetIntersectionId);
     if (it == outgoingRoads.end() || it->second.empty()) {
         // No outgoing roads, try to find any nearby road
@@ -327,6 +372,8 @@ void Vehicle::selectRandomRoad() {
             currentRoad = road;
             targetIntersectionId = road->toIntersectionId;
             startFollowingCurrentRoad();
+            // Re-plan path from new location
+            requestNewPath();
         } else {
             currentRoadPoints.clear();
             state = VehicleState::WAITING_JUNCTION;
@@ -344,6 +391,9 @@ void Vehicle::selectRandomRoad() {
     targetIntersectionId = currentRoad->toIntersectionId;
     
     startFollowingCurrentRoad();
+    
+    // Re-plan path since we went off-path (or didn't have one)
+    requestNewPath();
 }
 
 void Vehicle::startFollowingCurrentRoad() {

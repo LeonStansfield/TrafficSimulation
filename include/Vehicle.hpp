@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 #include <cstdint>
+#include "Pathfinder.hpp"
+#include <deque>
 
 class Quadtree;
 
@@ -51,6 +53,10 @@ private:
     Map* map;
     std::mt19937 gen;
     VehicleState state;
+    
+    // Pathfinding
+    std::deque<long> path;
+    long finalDestinationId;
 
 public:
     Vehicle(Vector2 pos, Vector2 sz, Color col, Map* m);
@@ -67,9 +73,12 @@ public:
     
     const Road* getRoad() const;
     bool isActive() const { return true; }
+    const std::deque<long>& getPath() const { return path; }
+    long getTargetIntersectionId() const { return targetIntersectionId; }
 
 private:
     void selectRandomRoad();
     void startFollowingCurrentRoad();
     void updateStats(float deltaTime);
+    void requestNewPath();
 };
