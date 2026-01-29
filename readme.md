@@ -128,6 +128,9 @@ SimulationTicks = 20000
 ## Todo
 Features:
  - Implement heatmap rendering of traffic speed
+ - Multi-lane behaviour
+ - Traffic lights
+ - Roundabouts
 
 Bugs:
  - Intersections are not counting vehicles passing them in their stats.

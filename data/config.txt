@@ -2,7 +2,7 @@
 # Lines starting with # are comments and will be ignored.
 # Keys and values are separated by '='.
 
-OSMFile = ../data/KempseyMap.osm
+OSMFile = ../data/berkely.osm
 NumberOfVehicles = 50
 #FastSimulation = true
 #SimulationTicks = 9000
