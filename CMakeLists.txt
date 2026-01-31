@@ -25,6 +25,7 @@ add_executable(TrafficSimulator
     src/Map.cpp
     src/Quadtree.cpp
     src/Pathfinder.cpp
+    src/ThreadPool.cpp
     src/Simulation.cpp
     src/Renderer.cpp
     src/InputController.cpp

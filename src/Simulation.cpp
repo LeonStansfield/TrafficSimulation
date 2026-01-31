@@ -5,7 +5,12 @@
 #include <time.h>
 
 Simulation::Simulation()
-    : map(nullptr), quadtree(nullptr), pathfinder(nullptr) {}
+    : map(nullptr), quadtree(nullptr), pathfinder(nullptr) {
+  unsigned int threads = std::thread::hardware_concurrency();
+  if (threads == 0)
+    threads = 4;
+  threadPool = std::make_unique<ThreadPool>(threads);
+}
 
 Simulation::~Simulation() {}
 
@@ -27,7 +32,7 @@ void Simulation::update(float deltaTime) {
   if (!quadtree)
     return;
 
-  // Rebuild the quadtree
+  // Rebuild the quadtree (Single threaded)
   quadtree->clear();
   for (const auto &obj : objects) {
     Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
@@ -36,14 +41,65 @@ void Simulation::update(float deltaTime) {
     }
   }
 
-  // Update all objects
-  for (const auto &obj : objects) {
-    Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
-    if (v) {
-      v->update(quadtree.get(), deltaTime);
-    } else {
-      obj->update(deltaTime);
+  // Parallel Update Loop
+  size_t count = objects.size();
+  if (count == 0)
+    return;
+
+  // Simple heuristic: don't thread if very few objects
+  if (count < 100) {
+    for (const auto &obj : objects) {
+      Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
+      if (v) {
+        v->update(quadtree.get(), deltaTime);
+      } else {
+        obj->update(deltaTime);
+      }
     }
+    return;
+  }
+
+  // Determine number of threads to use (hardware concurrency or default to 4)
+  unsigned int numThreads = std::thread::hardware_concurrency();
+  if (numThreads == 0)
+    numThreads = 4;
+
+  // Calculate chunk size to distribute work evenly
+  size_t chunkSize = (count + numThreads - 1) / numThreads; // Ceiling division
+
+  // Store futures to track task completion
+  std::vector<std::future<void>> futures;
+  futures.reserve(numThreads);
+
+  for (unsigned int i = 0; i < numThreads; ++i) {
+    size_t start = i * chunkSize;
+    size_t end = std::min(start + chunkSize, count);
+
+    if (start >= end)
+      break;
+
+    // Enqueue a lambda to the thread pool.
+    // This lambda captures 'this' to access objects/quadtree, and the range
+    // [start, end)
+    futures.emplace_back(threadPool->enqueue([this, start, end, deltaTime] {
+      for (size_t j = start; j < end; ++j) {
+        const auto &obj = this->objects[j];
+        Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
+        if (v) {
+          // Safe to read quadtree (read-only) and update vehicle (exclusive to
+          // this thread)
+          v->update(this->quadtree.get(), deltaTime);
+        } else {
+          obj->update(deltaTime);
+        }
+      }
+    }));
+  }
+
+  // Wait for all worker threads to finish their chunks before proceeding
+  // (Synchronization)
+  for (auto &f : futures) {
+    f.get();
   }
 }
 

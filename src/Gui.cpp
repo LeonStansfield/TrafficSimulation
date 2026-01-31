@@ -30,11 +30,11 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
   // Define style constants
   const int boxX = 20;
   const int boxY = 20;
-  const int width = 300; // Increased width for better spacing
+  const int width = 300;
   const int padding = 15;
   const int lineSpacing = 24;
   const float fontSize = 16.0f;
-  const int valueOffset = 140; // Increased offset for values
+  const int valueOffset = 140;
 
   Color panelColor = {20, 25, 30, 230};
   Color borderColor = {60, 70, 80, 255};
@@ -242,7 +242,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
         cursorY += lineSpacing;
 
         drawText("Visits:", cursorX, cursorY, fontSize, labelColor);
-        drawText(TextFormat("%ld", i->stats.vehiclesVisited),
+        drawText(TextFormat("%ld", i->stats.vehiclesVisited.load()),
                  cursorX + valueOffset, cursorY - 2, fontSize, valueColor);
       }
     } else if (selectionType == SelectionType::ROAD) {
@@ -252,7 +252,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
         cursorY += 18;
 
         drawText("Traffic:", cursorX, cursorY, fontSize, labelColor);
-        drawText(TextFormat("%ld", r->stats.vehiclesPassed),
+        drawText(TextFormat("%ld", r->stats.vehiclesPassed.load()),
                  cursorX + valueOffset, cursorY - 2, fontSize, valueColor);
         cursorY += lineSpacing;
 

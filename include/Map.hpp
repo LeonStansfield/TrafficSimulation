@@ -7,26 +7,76 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include <atomic>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <random>
 #include <vector>
 
+// Thread-Safe Statistics using std::atomic
+// These structs are used by multiple threads simultaneously (Vehicle updates)
 struct RoadStats {
-  long vehiclesPassed = 0;
-  double accumulatedSpeed = 0.0;
-  long speedSamples = 0;
+  // Mutable atomics allow modification even on const objects (safe logic)
+  mutable std::atomic<long> vehiclesPassed{0};
+  mutable std::atomic<double> accumulatedSpeed{0.0};
+  mutable std::atomic<long> speedSamples{0};
+
+  RoadStats() = default;
+
+  // Copy constructor required for vector resizing (std::vector moves/copies
+  // elements) Atomics are not copyable by default, so we must manually load and
+  // store properties.
+  RoadStats(const RoadStats &other) {
+    vehiclesPassed.store(other.vehiclesPassed.load());
+    accumulatedSpeed.store(other.accumulatedSpeed.load());
+    speedSamples.store(other.speedSamples.load());
+  }
+
+  // Assignment operator required for vector operations
+  RoadStats &operator=(const RoadStats &other) {
+    if (this != &other) {
+      vehiclesPassed.store(other.vehiclesPassed.load());
+      accumulatedSpeed.store(other.accumulatedSpeed.load());
+      speedSamples.store(other.speedSamples.load());
+    }
+    return *this;
+  }
 
   float getAverageSpeed() const {
-    return (speedSamples > 0)
-               ? static_cast<float>(accumulatedSpeed / speedSamples)
-               : 0.0f;
+    long samples = speedSamples.load();
+    return (samples > 0) ? static_cast<float>(accumulatedSpeed.load() / samples)
+                         : 0.0f;
+  }
+
+  // Helper for atomic double addition (CAS loop)
+  // std::atomic<double> does not have fetch_add
+  void addSpeed(double speed) {
+    double current = accumulatedSpeed.load();
+    // Compare Exchange Weak: "If accumulatedSpeed is still 'current', set it to
+    // 'current + speed'. If not (someone else changed it), update 'current' to
+    // the new value and try again."
+    while (!accumulatedSpeed.compare_exchange_weak(current, current + speed)) {
+      // Spin until successful
+    }
   }
 };
 
 struct IntersectionStats {
-  long vehiclesVisited = 0;
+  mutable std::atomic<long> vehiclesVisited{0};
+
+  IntersectionStats() = default;
+
+  IntersectionStats(const IntersectionStats &other) {
+    vehiclesVisited.store(other.vehiclesVisited.load());
+  }
+
+  IntersectionStats &operator=(const IntersectionStats &other) {
+    if (this != &other) {
+      vehiclesVisited.store(other.vehiclesVisited.load());
+    }
+    return *this;
+  }
 };
 
 struct Intersection {

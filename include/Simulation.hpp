@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include "Pathfinder.hpp"
 #include "Quadtree.hpp"
+#include "ThreadPool.hpp"
 #include <memory>
 #include <vector>
 
@@ -16,6 +17,7 @@ private:
   std::unique_ptr<Map> map;
   std::unique_ptr<Quadtree> quadtree;
   std::unique_ptr<Pathfinder> pathfinder;
+  std::unique_ptr<ThreadPool> threadPool;
 
 public:
   Simulation();
