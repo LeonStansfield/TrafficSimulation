@@ -6,9 +6,10 @@
 #include <time.h>
 
 Engine::Engine(int width, int height, const char *title)
-    : screenWidth(width), screenHeight(height), map(nullptr), debug(false),
-      selectionType(SelectionType::NONE), selectedVehicle(nullptr),
-      selectedIntersection(nullptr), selectedRoad(nullptr) {
+    : screenWidth(width), screenHeight(height), map(nullptr),
+      currentMode(DrawMode::NORMAL), selectionType(SelectionType::NONE),
+      selectedVehicle(nullptr), selectedIntersection(nullptr),
+      selectedRoad(nullptr) {
   SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
   InitWindow(screenWidth, screenHeight, title);
   if (!IsWindowReady()) {
@@ -117,7 +118,13 @@ void Engine::run() {
     }
 
     if (IsKeyPressed(KEY_Q)) {
-      debug = !debug;
+      if (currentMode == DrawMode::NORMAL) {
+        currentMode = DrawMode::DEBUG;
+      } else if (currentMode == DrawMode::DEBUG) {
+        currentMode = DrawMode::HEATMAP;
+      } else {
+        currentMode = DrawMode::NORMAL;
+      }
     }
 
     // Interaction / Selection Logic
@@ -188,9 +195,16 @@ void Engine::run() {
 
     if (map) {
       BeginMode2D(camera);
-      map->draw(debug);
-      for (const auto &obj : objects) {
-        obj->draw(debug);
+      map->draw(currentMode);
+
+      // Draw vehicles only if not in Heatmap mode
+      if (currentMode != DrawMode::HEATMAP) {
+        for (const auto &obj : objects) {
+          // Vehicles might be castable, but obj->draw takes bool normally.
+          // We need to update Object::draw signature or just pass debug check.
+          // For now, let's assume objects expect a boolean for debug.
+          obj->draw(currentMode == DrawMode::DEBUG);
+        }
       }
 
       // Highlight selection
@@ -230,7 +244,7 @@ void Engine::run() {
         }
       }
 
-      if (debug) {
+      if (currentMode == DrawMode::DEBUG) {
         quadtree->draw(camera);
       }
       EndMode2D();
@@ -287,10 +301,29 @@ void Engine::drawUI() {
   };
 
   // --- System Status ---
+  // --- System Status ---
   drawText("SIMULATION MODE", cursorX, cursorY, fontSize, labelColor);
   cursorY += 14;
-  drawText(debug ? "DEBUG" : "NORMAL", cursorX, cursorY, fontSize,
-           debug ? ORANGE : accentColor);
+
+  const char *modeText = "NORMAL";
+  Color modeColor = accentColor;
+
+  switch (currentMode) {
+  case DrawMode::NORMAL:
+    modeText = "NORMAL";
+    modeColor = accentColor;
+    break;
+  case DrawMode::DEBUG:
+    modeText = "DEBUG";
+    modeColor = ORANGE;
+    break;
+  case DrawMode::HEATMAP:
+    modeText = "HEATMAP";
+    modeColor = RED;
+    break;
+  }
+
+  drawText(modeText, cursorX, cursorY, fontSize, modeColor);
   cursorY += 28;
 
   // --- Selection Info ---
