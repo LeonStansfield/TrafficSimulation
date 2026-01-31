@@ -45,9 +45,9 @@ void Renderer::endDrawing() { EndDrawing(); }
 
 void Renderer::cycleDrawMode() {
   if (currentMode == DrawMode::NORMAL) {
-    currentMode = DrawMode::DEBUG;
-  } else if (currentMode == DrawMode::DEBUG) {
     currentMode = DrawMode::HEATMAP;
+  } else if (currentMode == DrawMode::HEATMAP) {
+    currentMode = DrawMode::DEBUG;
   } else {
     currentMode = DrawMode::NORMAL;
   }

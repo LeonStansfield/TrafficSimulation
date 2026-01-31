@@ -95,7 +95,7 @@ struct Road {
   mutable RoadStats stats;
 };
 
-enum class DrawMode { NORMAL, DEBUG, HEATMAP };
+enum class DrawMode { NORMAL, HEATMAP, DEBUG };
 
 class Map {
 private:
