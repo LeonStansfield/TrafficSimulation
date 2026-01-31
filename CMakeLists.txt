@@ -25,6 +25,10 @@ add_executable(TrafficSimulator
     src/Map.cpp
     src/Quadtree.cpp
     src/Pathfinder.cpp
+    src/Simulation.cpp
+    src/Renderer.cpp
+    src/InputController.cpp
+    src/Gui.cpp
 )
 
 # Tell our executable where to find its header files

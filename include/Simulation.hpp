@@ -1,0 +1,40 @@
+#pragma once
+
+#include "Map.hpp"
+#include "Object.hpp"
+#include "Pathfinder.hpp"
+#include "Quadtree.hpp"
+#include <memory>
+#include <vector>
+
+// Forward decl
+class Renderer;
+
+class Simulation {
+private:
+  std::vector<std::unique_ptr<Object>> objects;
+  std::unique_ptr<Map> map;
+  std::unique_ptr<Quadtree> quadtree;
+  std::unique_ptr<Pathfinder> pathfinder;
+
+public:
+  Simulation();
+  ~Simulation();
+
+  void setMap(std::unique_ptr<Map> newMap);
+  void update(float deltaTime);
+  void spawnVehicles(int count);
+  void addObject(std::unique_ptr<Object> object);
+
+  // Getters for Renderer / Input
+  const Map *getMap() const { return map.get(); }
+  const Quadtree *getQuadtree() const { return quadtree.get(); }
+  const std::vector<std::unique_ptr<Object>> &getObjects() const {
+    return objects;
+  }
+
+  // Mutable getters for internal updates if needed, though const preferred for
+  // external
+  Map *getMapMutable() { return map.get(); }
+  Pathfinder *getPathfinder() { return pathfinder.get(); }
+};

@@ -1,0 +1,129 @@
+classDiagram
+    class Object {
+        <<interface>>
+        +update(float deltaTime)*
+        +draw(bool debug)*
+    }
+
+    class Vehicle {
+        -Vector2 position
+        -Vector2 velocity
+        -VehicleState state
+        -Pathfinder* pathfinder
+        -Map* map
+        +update(float deltaTime)
+        +update(Quadtree* quadtree, float deltaTime)
+        +draw(bool debug)
+        -requestNewPath()
+    }
+
+    class Engine {
+        -Simulation simulation
+        -Renderer renderer
+        -InputController input
+        -Gui gui
+        +run()
+        +runFast(int ticks)
+        +addObject(unique_ptr~Object~)
+        +spawnVehicles(int count)
+    }
+
+    class Simulation {
+        -std::vector~unique_ptr~Object~~ objects
+        -std::unique_ptr~Map~ map
+        -std::unique_ptr~Quadtree~ quadtree
+        -std::unique_ptr~Pathfinder~ pathfinder
+        +update(float deltaTime)
+        +spawnVehicles(int count)
+        +addObject(unique_ptr~Object~)
+        +getMap()
+        +getQuadtree()
+    }
+
+    class Renderer {
+        -Camera2D camera
+        -Font font
+        -DrawMode currentMode
+        +beginDrawing()
+        +endDrawing()
+        +drawSimulation(const Simulation& simulation)
+        +resetCamera(const Map* map)
+    }
+
+    class InputController {
+        -SelectionType selectionType
+        -Object* selectedVehicle
+        -Intersection* selectedIntersection
+        -Road* selectedRoad
+        +handleInput(Camera2D& camera, Simulation& simulation)
+        +getSelectionType()
+    }
+
+    class Gui {
+        +draw(const Simulation& simulation, const InputController& input, const Renderer& renderer)
+    }
+
+    class Map {
+        -std::map~long, Intersection~ intersections
+        -std::vector~Road~ roads
+        +draw(DrawMode mode)
+        +getClosestRoad(Vector2 position)
+        +getOutgoingRoads()
+    }
+
+    class Pathfinder {
+        -Map* map
+        +findPath(long start, long end)
+    }
+
+    class Quadtree {
+        -Rectangle boundary
+        -std::vector~Vehicle*~ vehicles
+        -unique_ptr~Quadtree~ northwest
+        -unique_ptr~Quadtree~ northeast
+        +insert(Vehicle* vehicle)
+        +query(Rectangle range) const
+        +draw(const Camera2D& camera) const
+        -subdivide()
+    }
+
+    class Road {
+        <<struct>>
+        +long fromIntersectionId
+        +long toIntersectionId
+        +float speedLimit
+        +RoadStats stats
+    }
+
+    class Intersection {
+        <<struct>>
+        +long id
+        +Vector2 position
+        +IntersectionStats stats
+    }
+
+    Object <|-- Vehicle : Inheritance
+    
+    Engine *-- Simulation : Owns
+    Engine *-- Renderer : Owns
+    Engine *-- InputController : Owns
+    Engine *-- Gui : Owns
+
+    Simulation *-- Object : Manages
+    Simulation *-- Map : Owns
+    Simulation *-- Quadtree : Owns
+    Simulation *-- Pathfinder : Owns
+
+    Vehicle o-- Map : References
+    Vehicle o-- Pathfinder : References
+    Pathfinder o-- Map : References
+    
+    Renderer ..> Simulation : Visualizes
+    InputController ..> Simulation : Interacts
+    Gui ..> Simulation : Displays Info
+    Gui ..> InputController : Displays Info
+    
+    Quadtree o-- Vehicle : References
+    Quadtree *-- Quadtree : Recursive Composition
+    Map *-- Road : Contains
+    Map *-- Intersection : Contains
