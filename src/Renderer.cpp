@@ -16,7 +16,7 @@ Renderer::Renderer(int width, int height, const char *title)
   SetTargetFPS(60);
 
   // Font Loading
-  font = LoadFontEx("../data/font.ttf", 32, 0, 0);
+  font = LoadFontEx("../data/Consolas-Regular.ttf", 32, 0, 0);
   if (font.texture.id == 0) {
     std::cerr << "WARNING: Failed to load custom font. Using default."
               << std::endl;

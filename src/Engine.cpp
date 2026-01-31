@@ -1,8 +1,13 @@
 #include "Engine.hpp"
 #include <iostream>
+#include <string>
 
-Engine::Engine(int width, int height, const char *title)
-    : renderer(width, height, title) {}
+Engine::Engine(int width, int height, const char *title, std::string mapFile,
+               int numVehicles)
+    : renderer(width, height, title) {
+  config.mapFile = mapFile;
+  config.numVehicles = numVehicles;
+}
 
 Engine::~Engine() {}
 
@@ -22,6 +27,10 @@ void Engine::run() {
     // Input Handling
     input.handleInput(renderer.getCamera(), simulation);
 
+    if (IsKeyPressed(KEY_SPACE)) {
+      isPaused = !isPaused;
+    }
+
     if (IsKeyPressed(KEY_R)) {
       renderer.resetCamera(simulation.getMap());
     }
@@ -31,13 +40,18 @@ void Engine::run() {
     }
 
     // Update
-    simulation.update(GetFrameTime());
+    if (!isPaused) {
+      simulation.update(GetFrameTime());
+    }
 
     // Draw
     renderer.beginDrawing();
 
     renderer.drawSimulation(simulation);
-    gui.draw(simulation, input, renderer);
+
+    // We pass *this (Engine) to Gui so it can access/modify pause state and get
+    // config
+    gui.draw(simulation, input, renderer, *this);
 
     renderer.endDrawing();
   }

@@ -23,6 +23,9 @@ public:
 
   // Camera Control
   Camera2D &getCamera() { return camera; } // Mutable for InputController
+  const Camera2D &getCamera() const {
+    return camera;
+  } // Const for rendering/GUI
   void setCameraTarget(Vector2 target);
   void resetCamera(const Map *map);
 

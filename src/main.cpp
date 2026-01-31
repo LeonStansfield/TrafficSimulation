@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
 
   try {
     std::cout << "Initializing engine..." << std::endl;
-    Engine engine(800, 600, "Traffic Simulation");
+    Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles);
 
     std::cout << "Loading map..." << std::endl;
     engine.setMap(std::make_unique<Map>(mapFile.c_str()));

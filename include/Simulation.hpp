@@ -26,6 +26,15 @@ public:
   void spawnVehicles(int count);
   void addObject(std::unique_ptr<Object> object);
 
+  long getTickCount() const { return tickCount; }
+  int getVehicleCount() const {
+    return objects.size();
+  } // Approximate, includes all objects
+
+private:
+  long tickCount = 0;
+
+public:
   // Getters for Renderer / Input
   const Map *getMap() const { return map.get(); }
   const Quadtree *getQuadtree() const { return quadtree.get(); }

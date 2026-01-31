@@ -23,6 +23,7 @@ void Simulation::addObject(std::unique_ptr<Object> object) {
 }
 
 void Simulation::update(float deltaTime) {
+  tickCount++;
   if (!quadtree)
     return;
 

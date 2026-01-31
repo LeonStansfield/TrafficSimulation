@@ -14,9 +14,23 @@ private:
   InputController input;
   Gui gui;
 
+  bool isPaused = false;
+
+  struct ConfigInfo {
+    std::string mapFile;
+    int numVehicles;
+  } config;
+
 public:
-  Engine(int width, int height, const char *title);
+  Engine(int width, int height, const char *title, std::string mapFile,
+         int numVehicles);
   ~Engine();
+
+  bool getPaused() const { return isPaused; }
+  void setPaused(bool paused) { isPaused = paused; }
+  void togglePaused() { isPaused = !isPaused; }
+
+  const ConfigInfo &getConfig() const { return config; }
 
   void setMap(std::unique_ptr<Map> newMap);
   void addObject(std::unique_ptr<Object> object);
