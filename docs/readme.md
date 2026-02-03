@@ -4,7 +4,22 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
 ## Functionality
 
- * **`Engine`**: Initializes the window and the main simulation loop. It handles user input (panning and zooming), updates all simulation objects, and draws everything to the screen on each frame.
+    * **`Engine`**: The Engine class is the main entry point for the application. It initializes the window and runs the main loop. It manages the following core components:
+
+        * **`Simulation`**: This class contains the entire state of the simulation, including the map, vehicles, quadtree, and pathfinder. It handles the update logic for all objects and time management.
+
+        * **`Renderer`**: This class handles all graphical output. It manages the camera, font loading, and the separate drawing modes. It draws the simulation state to the screen.
+
+        * **`Gui`**: This class handles the 2D user interface overlay using RayGui. It displays simulation statistics and specific information for selected objects (vehicles, roads, intersections).
+
+        * **`InputController`**: This class processes user input (mouse clicks, keyboard) to update the camera position and handle object selection. It stores the state of the currently selected object.
+
+    * **`Multithreading`**: The simulation uses a `ThreadPool` class to parallelize the update loop. The list of vehicles is divided into chunks, and each chunk is processed by a separate thread to utilize available hardware concurrency.
+
+    * **`Rendering Modes`**: The application supports three rendering modes:
+        * **Normal**: Displays roads with standard markings and direction arrows.
+        * **Heatmap**: Colors roads based on the average speed of traffic. Green indicates high speed, while red indicates congestion.
+        * **Debug**: visualizes the internal logic, showing the exact paths vehicles follow, the quadtree spatial partitioning grid, and connection nodes.
 
     * **`Map`**: The Map class loads and parses .osm files using the libosmium library. It converts latitude and longitude coordinates into a 2D world space measured in meters.
 
@@ -14,8 +29,6 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`Lane Generation`**: Roads marked as two-way are split into two separate, offset Road objects (one for each direction), creating realistic lanes. One-way roads are represented as a single directed Road.
 
-        * **`Rendering`**: The map has two rendering modes. The normal view draws centered road lines with directional arrows (single for one-way, double for two-way). A debug view toggles drawing the actual offset paths that vehicles follow.
-
     * **`Intersection` and `Road`**:
 
         * An Intersection is a node in the graph, a point on the map where at least two roads meet.
@@ -24,7 +37,7 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
     * **`Pathfinder`**: A class that encapsulates the pathfinding logic. It uses the A* search algorithm on the Map's directed graph to find the shortest path (by road length) between any two intersections.
 
-    * **`Quadtree`**: A Quadtree is used to spatially partition all vehicles in the simulation. This allows for highly efficient "look-ahead" queries for collision avoidance and junction checks. Instead of checking against every other vehicle, a vehicle only queries against those in its immediate vicinity.
+    * **`Quadtree`**: A Quadtree is used to spatially partition all vehicles in the simulation. This allows for efficient spatial queries throughout the simulation.
 
     * **`Vehicle`**: Each Vehicle is an autonomous agent with randomized kinematic properties (max speed, acceleration, etc.) and a state machine (DRIVING, BRAKING, WAITING_JUNCTION). Vehicles respect the speed limits of the roads they are on, modulated by a randomized "speed factor" for realistic variation.
 
@@ -42,9 +55,9 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`Path Visualization`**: Selecting a vehicle renders its projected path as a ghost trail, visualizing the route it will take to its destination.
 
-        * **`Data Logging`**: Objects now persist statistical data. Roads record the volume and average speed of traffic, while intersections log the number of vehicles that have passed through.
+        * **`Data Logging`**: Objects now persist statistical data (thread-safe). Roads record the volume and average speed of traffic, while intersections log the number of vehicles that have passed through.
 
 ## Setup & Compilation
 
-See [WSL_SETUP_GUIDE.md](docs/WSL_SETUP_GUIDE.md) for detailed instructions on how to set up, compile and run the project using WSL on Windows.
+see [setup_and_compilation_guide.md](setup_and_compilation_guide.md) and [running_guide.md](running_guide.md).
 
