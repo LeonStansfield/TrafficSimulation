@@ -47,7 +47,7 @@ void Engine::run() {
     // Draw
     renderer.beginDrawing();
 
-    renderer.drawSimulation(simulation);
+    renderer.drawSimulation(simulation, input);
 
     // We pass *this (Engine) to Gui so it can access/modify pause state and get
     // config

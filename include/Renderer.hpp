@@ -4,6 +4,8 @@
 #include "raylib.h"
 #include <memory>
 
+class InputController; // Forward declaration
+
 class Renderer {
 private:
   int screenWidth;
@@ -19,20 +21,23 @@ public:
   void beginDrawing();
   void endDrawing();
 
-  void drawSimulation(const Simulation &simulation);
+  void resetCamera(const Map *map);
+  void setCameraTarget(Vector2 target);
+  void cycleDrawMode();
+
+  // Updated to take InputController for selection highlighting
+  void drawSimulation(const Simulation &simulation,
+                      const InputController &input);
 
   // Camera Control
   Camera2D &getCamera() { return camera; } // Mutable for InputController
   const Camera2D &getCamera() const {
     return camera;
   } // Const for rendering/GUI
-  void setCameraTarget(Vector2 target);
-  void resetCamera(const Map *map);
 
   // Mode Control
   void setDrawMode(DrawMode mode) { currentMode = mode; }
   DrawMode getDrawMode() const { return currentMode; }
-  void cycleDrawMode();
 
   // Resources
   const Font &getFont() const { return font; }

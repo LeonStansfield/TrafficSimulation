@@ -64,7 +64,10 @@ void Renderer::resetCamera(const Map *map) {
   camera.zoom = std::min(scaleX, scaleY);
 }
 
-void Renderer::drawSimulation(const Simulation &simulation) {
+#include "InputController.hpp" // Fully include for selection details
+
+void Renderer::drawSimulation(const Simulation &simulation,
+                              const InputController &input) {
   const Map *map = simulation.getMap();
   if (!map)
     return;
@@ -77,6 +80,58 @@ void Renderer::drawSimulation(const Simulation &simulation) {
   if (currentMode != DrawMode::HEATMAP) {
     for (const auto &obj : simulation.getObjects()) {
       obj->draw(currentMode == DrawMode::DEBUG);
+    }
+  }
+
+  // Draw Selection Highlights
+  SelectionType selectionType = input.getSelectionType();
+  if (selectionType != SelectionType::NONE) {
+
+    // Highlight Vehicle
+    if (selectionType == SelectionType::VEHICLE) {
+      const Vehicle *v =
+          dynamic_cast<const Vehicle *>(input.getSelectedVehicle());
+      if (v) {
+        // Draw selection ring
+        DrawRing(v->getPosition(), v->getSize().x / 2.0f + 2.0f,
+                 v->getSize().x / 2.0f + 5.0f, 0, 360, 0, GOLD);
+
+        // Draw Path
+        const std::vector<const Road *> &path = v->getPath();
+        int pathIndex = v->getPathIndex();
+
+        // Current road remaining points
+        // We can't access currentRoadPoints easily from here without getter,
+        // but we can draw the future path roads.
+
+        // Draw lines for the future path
+        for (size_t i = pathIndex; i < path.size(); ++i) {
+          const Road *r = path[i];
+          if (r) {
+            for (size_t j = 1; j < r->points.size(); ++j) {
+              DrawLineEx(r->points[j - 1], r->points[j], 4.0f,
+                         Fade(GOLD, 0.5f));
+            }
+          }
+        }
+      }
+    }
+    // Highlight Road
+    else if (selectionType == SelectionType::ROAD) {
+      const Road *r = input.getSelectedRoad();
+      if (r) {
+        for (size_t j = 1; j < r->points.size(); ++j) {
+          DrawLineEx(r->points[j - 1], r->points[j], 6.0f, Fade(YELLOW, 0.6f));
+        }
+      }
+    }
+    // Highlight Intersection
+    else if (selectionType == SelectionType::INTERSECTION) {
+      const Intersection *i = input.getSelectedIntersection();
+      if (i) {
+        DrawCircleV(i->position, 8.0f, YELLOW);
+        DrawRing(i->position, 8.0f, 12.0f, 0, 360, 0, ORANGE);
+      }
     }
   }
 
