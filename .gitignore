@@ -2,6 +2,7 @@
 build/
 Build/
 build/
+build_wsl/
 CMakeCache.txt
 CMakeLists.txt.user
 CMakeFiles/

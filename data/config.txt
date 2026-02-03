@@ -5,4 +5,4 @@
 OSMFile = ../data/maps/Berkely.osm
 NumberOfVehicles = 150
 FastSimulation = true
-SimulationTicks = 10000
+# SimulationTicks = 1000

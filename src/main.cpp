@@ -39,10 +39,11 @@ bool parseConfigFile(const std::string &path, std::string &mapFile,
     std::string key = line.substr(0, separatorPos);
     std::string value = line.substr(separatorPos + 1);
 
+    // Trim whitespace and potential carriage returns (CRLF issue)
     key.erase(0, key.find_first_not_of(" \t"));
-    key.erase(key.find_last_not_of(" \t") + 1);
+    key.erase(key.find_last_not_of(" \t\r") + 1); // Trim \r as well
     value.erase(0, value.find_first_not_of(" \t"));
-    value.erase(value.find_last_not_of(" \t") + 1);
+    value.erase(value.find_last_not_of(" \t\r") + 1); // Trim \r as well
 
     if (key.empty() || value.empty()) {
       continue;
