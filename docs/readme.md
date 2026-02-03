@@ -14,7 +14,12 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
         * **`InputController`**: This class processes user input (mouse clicks, keyboard) to update the camera position and handle object selection. It stores the state of the currently selected object.
 
-    * **`Multithreading`**: The simulation uses a `ThreadPool` class to parallelize the update loop. The list of vehicles is divided into chunks, and each chunk is processed by a separate thread to utilize available hardware concurrency.
+    * **`Multithreading`**: The simulation employs a task-based parallelism approach to efficiently update large numbers of vehicles.
+        * **Thread Pool**: A custom `ThreadPool` is initialized with a number of worker threads equal to the hardware concurrency (or a default of 4). These threads remain active throughout the application's lifecycle, waiting for tasks on a condition variable.
+        * **Parallel Update Loop**: In each simulation tick, the `Simulation::update` method determines if the number of objects is sufficient to warrant parallel processing (threshold > 100).
+        * **Work Partitioning**: The vector of vehicles is logically partitioned into contiguous chunks. The size of each chunk is calculated dynamically based on the total vehicle count and the number of available threads to ensure load balancing.
+        * **Task Submission**: A lambda function is created for each chunk, capturing the `this` pointer and the specific start/end indices for that chunk. These lambdas are enqueued into the `ThreadPool`.
+        * **Synchronization**: Each enqueue operation returns a `std::future<void>`. The main thread stores these futures in a vector and calls `.get()` on each one. This acts as a barrier synchronization point, ensuring all worker threads have completed their assigned vehicle updates before the main simulation loop proceeds to the rendering phase. This guarantees that the game state is consistent before it is drawn.
 
     * **`Rendering Modes`**: The application supports three rendering modes:
         * **Normal**: Displays roads with standard markings and direction arrows.
