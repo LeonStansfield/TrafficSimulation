@@ -7,8 +7,6 @@ WSL allows you to run a full Linux environment directly on Windows. This is the 
 1.  It is natively a Linux application.
 2.  WSL 2 (on Windows 10/11) supports GUI applications out of the box (WSLg), meaning the traffic simulation window will appear on your Windows desktop just like a native app.
 
----
-
 ## Step 1: Install WSL (If not already installed)
 1.  Open **PowerShell** as Administrator.
 2.  Run the following command:
@@ -21,8 +19,6 @@ WSL allows you to run a full Linux environment directly on Windows. This is the 
     ```
 3.  **Restart your computer** if prompted.
 4.  After restarting, open "Ubuntu" from your Start menu to complete the initial setup (username/password).
-
----
 
 ## Step 2: Open the Project in WSL
 Your Windows files are accessible inside WSL under the `/mnt/c/` path.
@@ -74,8 +70,6 @@ libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev \
 libwayland-dev libxkbcommon-dev
 ```
 
----
-
 ## Step 4: Build the Project
 Now you are ready to compile.
 
@@ -95,8 +89,6 @@ Now you are ready to compile.
     make -j$(nproc)
     ```
     *(`-j$(nproc)` tells it to use all CPU cores for faster compilation)*
-
----
 
 ## Step 5: Run the Simulation
 Once compilation finishes successfully:
