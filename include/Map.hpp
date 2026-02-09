@@ -14,19 +14,13 @@
 #include <random>
 #include <vector>
 
-// Thread-Safe Statistics using std::atomic
-// These structs are used by multiple threads simultaneously (Vehicle updates)
 struct RoadStats {
-  // Mutable atomics allow modification even on const objects (safe logic)
   mutable std::atomic<long> vehiclesPassed{0};
   mutable std::atomic<double> accumulatedSpeed{0.0};
   mutable std::atomic<long> speedSamples{0};
 
   RoadStats() = default;
 
-  // Copy constructor required for vector resizing (std::vector moves/copies
-  // elements) Atomics are not copyable by default, so we must manually load and
-  // store properties.
   RoadStats(const RoadStats &other) {
     vehiclesPassed.store(other.vehiclesPassed.load());
     accumulatedSpeed.store(other.accumulatedSpeed.load());
@@ -49,15 +43,9 @@ struct RoadStats {
                          : 0.0f;
   }
 
-  // Helper for atomic double addition (CAS loop)
-  // std::atomic<double> does not have fetch_add
   void addSpeed(double speed) {
     double current = accumulatedSpeed.load();
-    // Compare Exchange Weak: "If accumulatedSpeed is still 'current', set it to
-    // 'current + speed'. If not (someone else changed it), update 'current' to
-    // the new value and try again."
     while (!accumulatedSpeed.compare_exchange_weak(current, current + speed)) {
-      // Spin until successful
     }
   }
 };
@@ -92,6 +80,7 @@ struct Road {
   bool isOneWay;
   float length;
   float speedLimit;
+  int lanes;
   mutable RoadStats stats;
 };
 
@@ -102,7 +91,6 @@ private:
   std::map<long, Vector2> nodes;
   std::map<long, Intersection> intersections;
   std::vector<Road> roads;
-  // Adjacency list for the directed graph
   std::map<long, std::vector<const Road *>> outgoingRoads;
 
   std::map<std::pair<long, long>, std::vector<Vector2>> baseRoadSegments;

@@ -21,6 +21,7 @@ struct WayData {
   std::vector<long> node_ids;
   bool isOneWay;
   float speedLimit; // m/s
+  int lanes;
 };
 
 class MapHandler : public osmium::handler::Handler {
@@ -101,12 +102,36 @@ public:
         }
       }
 
+      // Determine number of lanes
+      int lanes = 1;
+      const char *lanes_tag = way.tags().get_value_by_key("lanes");
+      if (lanes_tag) {
+        try {
+          lanes = std::stoi(lanes_tag);
+        } catch (...) {
+          // parsing failed, stick to default
+        }
+      } else {
+        // Infer from highway type
+        if (strcmp(highway_tag, "motorway") == 0 ||
+            strcmp(highway_tag, "motorway_link") == 0 ||
+            strcmp(highway_tag, "trunk") == 0 ||
+            strcmp(highway_tag, "trunk_link") == 0) {
+          lanes = 3;
+        } else {
+          lanes = 1;
+        }
+      }
+      // Ensure at least 1 lane
+      if (lanes < 1)
+        lanes = 1;
+
       std::vector<long> way_nodes;
       for (const auto &node_ref : way.nodes()) {
         way_nodes.push_back(static_cast<long>(node_ref.ref()));
       }
       if (way_nodes.size() >= 2) {
-        ways.push_back({way_nodes, oneWay, speedLimit});
+        ways.push_back({way_nodes, oneWay, speedLimit, lanes});
       }
     }
   }
@@ -308,6 +333,12 @@ Map::Map(const char *filename) {
         forward_road.toIntersectionId = endNodeId;
         forward_road.isOneWay = way.isOneWay;
         forward_road.speedLimit = way.speedLimit;
+        forward_road.lanes =
+            way.isOneWay
+                ? way.lanes
+                : std::max(1, way.lanes /
+                                  2); // Split lanes for 2-way if not specified
+                                      // per direction (simplified)
 
         if (!way.isOneWay) {
           forward_road.points = offsetPolyline(base_points, roadOffset);
@@ -325,6 +356,7 @@ Map::Map(const char *filename) {
           backward_road.toIntersectionId = startNodeId;
           backward_road.isOneWay = false; // Part of two-way
           backward_road.speedLimit = way.speedLimit;
+          backward_road.lanes = forward_road.lanes;
 
           std::vector<Vector2> reversed_base_points = base_points;
           std::reverse(reversed_base_points.begin(),

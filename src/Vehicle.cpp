@@ -19,7 +19,7 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map *m, Pathfinder *pf)
       pathfinder(pf), currentPathRoadIndex(0), currentRoadPointIndex(0),
       isWaitingAtJunction(false), state(VehicleState::DRIVING),
       gen(std::random_device{}()), destinationIntersectionId(-1),
-      accumulatedSpeed(0.0), speedSamples(0), timeActive(0.0f) {
+      accumulatedSpeed(0.0), speedSamples(0), timeActive(0.0f), currentLane(0) {
 
   std::uniform_real_distribution<> speed_dist(
       13.0f, 31.0f); // Speed range in m/s (approx. 30-70 mph)
@@ -221,6 +221,10 @@ void Vehicle::update(Quadtree *quadtree, float deltaTime) {
     if (other == this)
       continue;
 
+    // Only care about vehicles in the same lane for direct collision
+    if (other->getLane() != currentLane)
+      continue;
+
     Vector2 toOther = Vector2Subtract(other->getPosition(), position);
     float distSqr = Vector2LengthSqr(toOther);
     if (distSqr == 0.0f || distSqr > vehicleLookAhead * vehicleLookAhead)
@@ -243,6 +247,38 @@ void Vehicle::update(Quadtree *quadtree, float deltaTime) {
     float distance = sqrt(closestDistSqr) - (leadVehicle->getSize().x / 2.0f) -
                      (size.x / 2.0f);
     float safeDistance = currentSpeed * desiredTimeGap + minGap;
+
+    // Lane Changing Logic (Overtaking)
+    const Road *road = getRoad();
+    if (road && road->lanes > 1 && currentLane < road->lanes - 1) {
+      // If we really need to brake significantly, try to switch lanes
+      if (distance < safeDistance * 1.5f &&
+          currentSpeed >
+              minSpeed * 1.2f) { // Only overtake if we have some speed
+        // Check if target lane is free
+        int targetLane = currentLane + 1;
+        bool laneFree = true;
+
+        // Check nearby again for the target lane
+        for (Vehicle *other : nearby) {
+          if (other == this)
+            continue;
+          if (other->getLane() == targetLane) {
+            Vector2 toOther = Vector2Subtract(other->getPosition(), position);
+            float dist = Vector2Length(toOther);
+            // Check if space is valid (ahead and behind)
+            if (dist < safeDistance * 2.0f) { // Simple safety check
+              laneFree = false;
+              break;
+            }
+          }
+        }
+
+        if (laneFree) {
+          currentLane++;
+        }
+      }
+    }
 
     if (distance < safeDistance) {
       float brakeSpeed =
@@ -372,6 +408,11 @@ void Vehicle::startFollowingCurrentRoad() {
 
   currentRoadPoints = roadToFollow->points;
   currentRoadPointIndex = 0; // Always start at the beginning of the new road
+
+  // Reset lane to 0 when entering new road
+  if (currentLane >= roadToFollow->lanes) {
+    currentLane = roadToFollow->lanes - 1;
+  }
 }
 
 void Vehicle::requestNewPath() {
