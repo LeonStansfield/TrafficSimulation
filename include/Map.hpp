@@ -81,6 +81,7 @@ struct Road {
   float length;
   float speedLimit;
   int lanes;
+  bool isRoundabout;
   mutable RoadStats stats;
 };
 
@@ -92,6 +93,7 @@ private:
   std::map<long, Intersection> intersections;
   std::vector<Road> roads;
   std::map<long, std::vector<const Road *>> outgoingRoads;
+  std::map<long, std::vector<const Road *>> incomingRoads;
 
   std::map<std::pair<long, long>, std::vector<Vector2>> baseRoadSegments;
   std::map<std::pair<long, long>, bool> baseSegmentOneWay;
@@ -117,5 +119,8 @@ public:
   }
   const std::map<long, std::vector<const Road *>> &getOutgoingRoads() const {
     return outgoingRoads;
+  }
+  const std::map<long, std::vector<const Road *>> &getIncomingRoads() const {
+    return incomingRoads;
   }
 };

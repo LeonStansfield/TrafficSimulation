@@ -150,6 +150,32 @@ void Vehicle::update(Quadtree *quadtree, float deltaTime) {
       }
 
       if (safeToProceed) {
+        // Roundabout Yielding Logic
+        if (nextRoadToJoin->isRoundabout && !getRoad()->isRoundabout) {
+          long junctionId = getRoad()->toIntersectionId;
+          const auto &incoming = map->getIncomingRoads();
+
+          if (incoming.count(junctionId)) {
+            for (const Road *incRoad : incoming.at(junctionId)) {
+              if (incRoad->isRoundabout && incRoad != nextRoadToJoin) {
+                // Check for vehicles on the conflicting ring road
+                for (Vehicle *other : nearby) {
+                  if (other == this)
+                    continue;
+                  if (other->getRoad() == incRoad) {
+                    safeToProceed = false;
+                    break;
+                  }
+                }
+              }
+              if (!safeToProceed)
+                break;
+            }
+          }
+        }
+      }
+
+      if (safeToProceed) {
         isWaitingAtJunction = false;
         currentPathRoadIndex++; // Advance to the next road in our path
         startFollowingCurrentRoad();

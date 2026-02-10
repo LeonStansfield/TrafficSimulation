@@ -54,6 +54,8 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
     * **`Junction Logic`**: Vehicles detect when they are approaching an intersection. They query the Quadtree for other vehicles in the junction area. If the junction is busy with another vehicle, the vehicle enters a WAITING_JUNCTION state and stops until the path is clear.
 
+    * **`Lane Changing Logic`**: Vehicles can change lanes to overtake slower traffic or to prepare for upcoming turns. They evaluate the traffic in adjacent lanes and switch if a safe opportunity arises, maintaining a safe following distance from vehicles in the target lane. Lane changing is managed using a int to record what lane each vehicle is in, rather than physically moving the vehicle to a new lane.
+
 * **`Interactivity`**: The simulation allows users to interact with the environment using the mouse.
 
     * **`Selection System`**: Users can click to select vehicles, roads, or intersections. A custom UI panel displays relevant statistics for the selected object, such as a vehicle's current and average speed, or a road's traffic count.

@@ -22,6 +22,7 @@ struct WayData {
   bool isOneWay;
   float speedLimit; // m/s
   int lanes;
+  bool isRoundabout;
 };
 
 class MapHandler : public osmium::handler::Handler {
@@ -126,12 +127,17 @@ public:
       if (lanes < 1)
         lanes = 1;
 
+      // Check for roundabout
+      const char *junction_tag = way.tags().get_value_by_key("junction");
+      bool isRoundabout =
+          (junction_tag && strcmp(junction_tag, "roundabout") == 0);
+
       std::vector<long> way_nodes;
       for (const auto &node_ref : way.nodes()) {
         way_nodes.push_back(static_cast<long>(node_ref.ref()));
       }
       if (way_nodes.size() >= 2) {
-        ways.push_back({way_nodes, oneWay, speedLimit, lanes});
+        ways.push_back({way_nodes, oneWay, speedLimit, lanes, isRoundabout});
       }
     }
   }
@@ -288,7 +294,9 @@ Map::Map(const char *filename) {
   }
 
   // Build roads
-  float roadOffset = 3.5f; // Approx. lane width in meters
+  // roadOffset determines the side of data implementation.
+  // Positive = Right-Hand Traffic (RHT). Negative = Left-Hand Traffic (LHT).
+  float roadOffset = -3.5f; // Approx. lane width in meters (LHT for UK)
   roads.clear();
   baseRoadSegments.clear();
   baseSegmentOneWay.clear();
@@ -333,6 +341,7 @@ Map::Map(const char *filename) {
         forward_road.toIntersectionId = endNodeId;
         forward_road.isOneWay = way.isOneWay;
         forward_road.speedLimit = way.speedLimit;
+        forward_road.isRoundabout = way.isRoundabout;
         forward_road.lanes =
             way.isOneWay
                 ? way.lanes
@@ -357,6 +366,7 @@ Map::Map(const char *filename) {
           backward_road.isOneWay = false; // Part of two-way
           backward_road.speedLimit = way.speedLimit;
           backward_road.lanes = forward_road.lanes;
+          backward_road.isRoundabout = way.isRoundabout;
 
           std::vector<Vector2> reversed_base_points = base_points;
           std::reverse(reversed_base_points.begin(),
@@ -373,8 +383,10 @@ Map::Map(const char *filename) {
 
   // Build the adjacency list
   outgoingRoads.clear();
+  incomingRoads.clear();
   for (const auto &road : roads) {
     outgoingRoads[road.fromIntersectionId].push_back(&road);
+    incomingRoads[road.toIntersectionId].push_back(&road);
   }
 
   std::cout << "Map data loaded successfully." << std::endl;
