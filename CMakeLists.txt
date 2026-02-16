@@ -1,5 +1,5 @@
 # Set the minimum required version of CMake
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14) # Updated for FetchContent
 
 # Define the project name and C++ version
 project(TrafficSimulator VERSION 1.0)
@@ -17,9 +17,8 @@ find_package(ZLIB REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(BZip2 REQUIRED)
 
-# Create executable
-add_executable(TrafficSimulator
-    src/main.cpp
+# --- Core Library ---
+add_library(TrafficSimulatorLib STATIC
     src/Engine.cpp
     src/Vehicle.cpp
     src/Map.cpp
@@ -32,29 +31,46 @@ add_executable(TrafficSimulator
     src/Gui.cpp
 )
 
-# Tell our executable where to find its header files
-target_include_directories(TrafficSimulator PRIVATE
+target_include_directories(TrafficSimulatorLib PUBLIC
     include
     libs/libosmium/include
     libs/protozero/include
     ${BZIP2_INCLUDE_DIRS}
 )
 
-# Link our game executable against its libraries
-target_link_libraries(TrafficSimulator PRIVATE
+target_link_libraries(TrafficSimulatorLib PUBLIC
     raylib
     ${ZLIB_LIBRARIES}
     ${EXPAT_LIBRARIES}
     ${BZIP2_LIBRARIES}
 )
 
-# Add definitions and libraries needed for Windows
 if(WIN32)
-    target_compile_definitions(TrafficSimulator PRIVATE
+    target_compile_definitions(TrafficSimulatorLib PUBLIC
         _USE_MATH_DEFINES
         _CRT_SECURE_NO_WARNINGS
         _CRT_NONSTDC_NO_DEPRECATE
         NOMINMAX
     )
-    target_link_libraries(TrafficSimulator PRIVATE winmm gdi32 shell32)
+    target_link_libraries(TrafficSimulatorLib PUBLIC winmm gdi32 shell32)
 endif()
+
+# --- Main Executable ---
+add_executable(TrafficSimulator
+    src/main.cpp
+)
+
+target_link_libraries(TrafficSimulator PRIVATE TrafficSimulatorLib)
+
+# --- Testing ---
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+add_subdirectory(tests)

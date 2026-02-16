@@ -217,6 +217,30 @@ static void addArrowVerts(std::vector<Vector2> &verts, Vector2 midPoint,
   verts.push_back(p3);
 }
 
+Map::Map() {
+  minLat = 0;
+  maxLat = 0;
+  minLon = 0;
+  maxLon = 0;
+  worldWidth = 1000;
+  worldHeight = 1000;
+}
+
+void Map::addIntersection(const Intersection &intersection) {
+  intersections[intersection.id] = intersection;
+}
+
+void Map::addRoad(const Road &road) {
+  roads.push_back(road);
+  // Rebuild adjacency lists because vector reallocation invalidates pointers
+  outgoingRoads.clear();
+  incomingRoads.clear();
+  for (const auto &r : roads) {
+    outgoingRoads[r.fromIntersectionId].push_back(&r);
+    incomingRoads[r.toIntersectionId].push_back(&r);
+  }
+}
+
 Map::Map(const char *filename) {
   std::vector<WayData> ways_temp;
 

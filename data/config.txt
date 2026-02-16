@@ -3,6 +3,6 @@
 # Keys and values are separated by '='.
 
 OSMFile = ../data/maps/GlocesterRoadNorth.osm
-NumberOfVehicles = 150
-FastSimulation = true
-SimulationTicks = 18000
+NumberOfVehicles = 100
+#FastSimulation = true
+#SimulationTicks = 18000

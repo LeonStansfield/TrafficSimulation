@@ -102,7 +102,10 @@ private:
   float worldWidth, worldHeight;
 
 public:
+  Map();
   Map(const char *filename);
+  void addIntersection(const Intersection &intersection);
+  void addRoad(const Road &road);
   void draw(DrawMode mode);
 
   float getWorldWidth() const { return worldWidth; }

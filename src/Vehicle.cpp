@@ -44,32 +44,39 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map *m, Pathfinder *pf)
   direction = {1, 0}; // Default direction
 
   // Snap to closest road and find first path
-  const Road *startRoad = map->getClosestRoad(position);
-  if (startRoad && !startRoad->points.empty()) {
-    // Find the closest point on this new path to snap to
-    float minDistSq = FLT_MAX;
-    int closestIndex = 0;
-    for (int i = 0; i < startRoad->points.size(); ++i) {
-      float distSq = Vector2DistanceSqr(position, startRoad->points[i]);
-      if (distSq < minDistSq) {
-        minDistSq = distSq;
-        closestIndex = i;
+  if (map) {
+    const Road *startRoad = map->getClosestRoad(position);
+    if (startRoad && !startRoad->points.empty()) {
+      // Find the closest point on this new path to snap to
+      float minDistSq = FLT_MAX;
+      int closestIndex = 0;
+      for (int i = 0; i < startRoad->points.size(); ++i) {
+        float distSq = Vector2DistanceSqr(position, startRoad->points[i]);
+        if (distSq < minDistSq) {
+          minDistSq = distSq;
+          closestIndex = i;
+        }
       }
+      // Snap the vehicle to the path
+      position = startRoad->points[closestIndex];
+
+      // Set initial speed limit
+      maxSpeed = startRoad->speedLimit * speedFactor;
+
+      // Set up a path
+      requestNewPath();
+
+    } else {
+      // No road found, become inert
+      currentSpeed = 0.0f;
+      velocity = {0, 0};
+      state = VehicleState::WAITING_JUNCTION;
     }
-    // Snap the vehicle to the path
-    position = startRoad->points[closestIndex];
-
-    // Set initial speed limit
-    maxSpeed = startRoad->speedLimit * speedFactor;
-
-    // Set up a path
-    requestNewPath();
-
   } else {
-    // No road found, become inert
-    currentSpeed = 0.0f;
-    velocity = {0, 0};
-    state = VehicleState::WAITING_JUNCTION;
+      // No map provided (testing mode), become inert
+      currentSpeed = 0.0f;
+      velocity = {0, 0};
+      state = VehicleState::WAITING_JUNCTION;
   }
 }
 
