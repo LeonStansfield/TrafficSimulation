@@ -7,10 +7,11 @@ Features:
  - [ ] New Config File stuff:
     - [ ] Simulation ticks per second
     - [ ] Left/Right hand drive
- - [ ] Unit Tests
+ - [x] Unit Tests
 
 Bugs:
  - [ ] Fast simulation mode causes vehicles to end up off-road sometimes when fast mode ends.
+ - [ ] Exponential time complexity in vehicle spawning
  - [x] Refactor code so map rendering and other different rendering types (normal, debug, heatmap) are in their own seperate classes and files.
 
 optimisations and improvements:
