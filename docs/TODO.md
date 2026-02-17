@@ -8,10 +8,11 @@ Features:
     - [ ] Simulation ticks per second
     - [ ] Left/Right hand drive
  - [x] Unit Tests
+ - [x] Benchmarking mode, with data exporting to CSV.
 
 Bugs:
  - [ ] Fast simulation mode causes vehicles to end up off-road sometimes when fast mode ends.
- - [ ] Exponential time complexity in vehicle spawning
+ - [ ] Exponential time complexity in vehicle spawning?
  - [x] Refactor code so map rendering and other different rendering types (normal, debug, heatmap) are in their own seperate classes and files.
 
 optimisations and improvements:

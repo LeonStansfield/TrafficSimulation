@@ -1,0 +1,48 @@
+classDiagram
+    class Engine {
+        -Simulation simulation
+        +run()
+    }
+
+    class Simulation {
+        -List~Object~ objects
+        -Map map
+        +update(deltaTime)
+    }
+
+    class Object {
+        <<interface>>
+        +update(deltaTime)*
+        +draw()*
+    }
+
+    class Vehicle {
+        -Vector2 position
+        -Vector2 velocity
+    }
+
+    class Map {
+        -List~Road~ roads
+        -List~Junction~ junctions
+    }
+
+    class Road {
+        +long fromJunctionId
+        +long toJunctionId
+        +float speedLimit
+    }
+
+    class Junction {
+        +long id
+        +Vector2 position
+    }
+
+    %% Relationships
+    Engine *-- Simulation : Owns
+    Simulation *-- Object : Manages
+    Simulation *-- Map : Owns
+    
+    Object <|-- Vehicle : Inheritance
+    
+    Map *-- Road : Contains
+    Map *-- Junction : Contains

@@ -8,7 +8,7 @@ After a successful compilation, the executable will be located in the build dire
 
 Examples:
 
-`./TrafficSimulator -OSMFile ../data/StNewlynEastMap.osm -NumberOfVehicles 500 -FastSimulation true -SimulationTicks 2000`
+`./TrafficSimulator -OSMFile ../data/maps/StNewlynEastMap.osm -NumberOfVehicles 500 -FastSimulation true -SimulationTicks 2000`
 
 `./TrafficSimulator -ConfigFile ../data/config.txt`
 
@@ -22,4 +22,23 @@ OSMFile = data/StNewlynEastMap.osm
 NumberOfVehicles = 500
 FastSimulation = true
 SimulationTicks = 20000
+```
+
+### List of arguments
+- OSMFile: Path to the OSM file to be used for the simulation. (str, eg: "../data/StNewlynEastMap.osm")
+- NumberOfVehicles: Number of vehicles to be used for the simulation. (int, eg: 500)
+- FastSimulation: Whether to use fast simulation mode. (bool, eg: true)
+- SimulationTicks: Number of ticks to be used for the simulation. (int, eg: 2000)
+- ConfigFile: Path to the config file to be used for the simulation. (str, eg: "../data/config.txt")
+- BenchmarkOutput: Path to the benchmark output file to be used for the simulation. (str, eg: "../data/profilingresults/benchmarks.csv")
+
+### Benchmarking Tutorial
+The system includes a benchmarking tool to analyze performance. To use this, you can run a simulation with `FastSimulation` enabled and specify an output file for the benchmark using the `BenchmarkOutput` argument.eg:
+```bash
+./TrafficSimulator -OSMFile ../data/maps/StNewlynEastMap.osm -NumberOfVehicles 500 -FastSimulation true -SimulationTicks 1000 -BenchmarkOutput ../data/profilingresults/benchmarks.csv
+```
+
+The output CSV contains timing data for each section of the simulation per tick:
+```csv
+Tick,TotalTick,Quadtree,Vehicles,Render
 ```

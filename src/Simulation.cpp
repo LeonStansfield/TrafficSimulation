@@ -1,5 +1,6 @@
 #include "Simulation.hpp"
 #include "Vehicle.hpp"
+#include "Benchmarker.hpp"
 #include <iostream>
 #include <random>
 #include <time.h>
@@ -33,6 +34,7 @@ void Simulation::update(float deltaTime) {
     return;
 
   // Rebuild the quadtree (Single threaded)
+  Benchmarker::Get().Start("Quadtree");
   quadtree->clear();
   for (const auto &obj : objects) {
     Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
@@ -40,12 +42,14 @@ void Simulation::update(float deltaTime) {
       quadtree->insert(v);
     }
   }
+  Benchmarker::Get().Stop("Quadtree");
 
   // Parallel Update Loop
   size_t count = objects.size();
   if (count == 0)
     return;
 
+  Benchmarker::Get().Start("Vehicles");
   // Simple heuristic: don't thread if very few objects
   if (count < 100) {
     for (const auto &obj : objects) {
@@ -56,6 +60,7 @@ void Simulation::update(float deltaTime) {
         obj->update(deltaTime);
       }
     }
+    Benchmarker::Get().Stop("Vehicles");
     return;
   }
 
@@ -101,6 +106,7 @@ void Simulation::update(float deltaTime) {
   for (auto &f : futures) {
     f.get();
   }
+  Benchmarker::Get().Stop("Vehicles");
 }
 
 void Simulation::spawnVehicles(int count) {

@@ -1,4 +1,5 @@
 #include "Engine.hpp"
+#include "Benchmarker.hpp"
 #include <iostream>
 #include <string>
 
@@ -63,6 +64,10 @@ void Engine::runFast(int ticks) {
     return;
   }
 
+  if (!config.benchmarkOutput.empty()) {
+      Benchmarker::Get().BeginSession(config.benchmarkOutput);
+  }
+
   const float FIXED_DELTA_TIME = 1.0f / 60.0f;
 
   for (int i = 0; i < ticks; ++i) {
@@ -70,9 +75,16 @@ void Engine::runFast(int ticks) {
       std::cout << "\rSimulation progress: " << (i * 100 / ticks) << "%"
                 << std::flush;
     }
+    
+    Benchmarker::Get().Start("TotalTick");
     simulation.update(FIXED_DELTA_TIME);
+    Benchmarker::Get().Stop("TotalTick");
+    
+    Benchmarker::Get().WriteFrame(i);
   }
   std::cout << "\rSimulation progress: 100%." << std::endl;
+  
+  Benchmarker::Get().EndSession();
 }
 
 void Engine::spawnVehicles(int count) { simulation.spawnVehicles(count); }

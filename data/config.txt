@@ -6,3 +6,4 @@ OSMFile = ../data/maps/GlocesterRoadNorth.osm
 NumberOfVehicles = 100
 #FastSimulation = true
 #SimulationTicks = 18000
+#BenchmarkOutput = benchmarks/results.csv

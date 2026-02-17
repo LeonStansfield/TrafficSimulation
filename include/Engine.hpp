@@ -19,6 +19,7 @@ private:
   struct ConfigInfo {
     std::string mapFile;
     int numVehicles;
+    std::string benchmarkOutput;
   } config;
 
 public:
@@ -36,6 +37,7 @@ public:
   void addObject(std::unique_ptr<Object> object);
   void run();
   void runFast(int ticks);
+  void setBenchmarkOutput(const std::string& path) { config.benchmarkOutput = path; }
 
 public:
   void spawnVehicles(int count);
