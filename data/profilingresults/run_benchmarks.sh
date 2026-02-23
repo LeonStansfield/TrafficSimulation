@@ -11,7 +11,7 @@ echo "Starting Benchmarks..."
 for i in {100..1500..100}
 do
     echo "Running Benchmark: $i Vehicles"
-    ./build/TrafficSimulator -OSMFile data/maps/Berkely.osm -NumberOfVehicles $i -FastSimulation false -SimulationTicks 1200 -BenchmarkOutput data/profilingresults/benchmark_$i.csv
+    ./build/TrafficSimulator -OSMFile data/maps/Berkely.osm -NumberOfVehicles $i -FastSimulation false -SimulationTicks 1200 -BenchmarkOutput data/profilingresults/benchmark_$i.csv -UseQuadtree false
     echo "Done."
 done
 
