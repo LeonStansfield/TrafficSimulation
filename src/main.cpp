@@ -17,7 +17,8 @@ bool stringToBool(std::string str) {
 
 // Parses a simple key = value config file
 bool parseConfigFile(const std::string &path, std::string &mapFile,
-                     int &numVehicles, bool &fastMode, int &numTicks, std::string &benchmarkOutput) {
+                     int &numVehicles, bool &fastMode, int &numTicks,
+                     std::string &benchmarkOutput) {
   std::ifstream file(path);
   if (!file.is_open()) {
     std::cerr << "Error: Could not open config file: " << path << std::endl;
@@ -97,22 +98,22 @@ void printUsage(const char *progName) {
       << "  -ConfigFile <path>        Path to configuration file. (Loads first)"
       << std::endl;
   std::cerr << "  -OSMFile <path>           Path to .osm file. (Required)"
-      << std::endl;
+            << std::endl;
   std::cerr << "  -NumberOfVehicles <int>   Number of vehicles to spawn."
-      << std::endl;
+            << std::endl;
   std::cerr << "  -FastSimulation <bool>    Enable fast-forward mode."
-      << std::endl;
+            << std::endl;
   std::cerr << "  -SimulationTicks <int>    Number of ticks for fast-forward."
-      << std::endl;
+            << std::endl;
   std::cerr << "  -BenchmarkOutput <path>   Path to output CSV benchmark file."
-      << std::endl;
+            << std::endl;
   std::cerr << std::endl;
   std::cerr << "Example (Config): " << progName << " -ConfigFile config.ini"
-      << std::endl;
+            << std::endl;
   std::cerr << "Example (Manual): " << progName
-      << " -OSMFile data/MyMap.osm -NumberOfVehicles 500 -FastSimulation "
-         "true -SimulationTicks 50000"
-      << std::endl;
+            << " -OSMFile data/MyMap.osm -NumberOfVehicles 500 -FastSimulation "
+               "true -SimulationTicks 50000"
+            << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -179,7 +180,7 @@ int main(int argc, char *argv[]) {
   if (fastMode) {
     std::cout << "Ticks: " << numTicks << std::endl;
     if (!benchmarkOutput.empty()) {
-        std::cout << "Benchmark Output: " << benchmarkOutput << std::endl;
+      std::cout << "Benchmark Output: " << benchmarkOutput << std::endl;
     }
   }
   std::cout << "---------------------------" << std::endl;
@@ -187,9 +188,9 @@ int main(int argc, char *argv[]) {
   try {
     std::cout << "Initializing engine..." << std::endl;
     Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles);
-    
+
     if (!benchmarkOutput.empty()) {
-        engine.setBenchmarkOutput(benchmarkOutput);
+      engine.setBenchmarkOutput(benchmarkOutput);
     }
 
     std::cout << "Loading map..." << std::endl;
@@ -205,11 +206,15 @@ int main(int argc, char *argv[]) {
       std::cout
           << "Fast simulation complete. Continuing with real-time simulation."
           << std::endl;
+      engine.run();
     } else {
       std::cout << "Running in Real-Time Mode." << std::endl;
+      if (!benchmarkOutput.empty()) {
+        engine.run(numTicks);
+      } else {
+        engine.run();
+      }
     }
-
-    engine.run();
   } catch (const std::exception &e) {
     std::cerr << "FATAL ERROR: " << e.what() << std::endl;
     return 1;

@@ -8,10 +8,10 @@ mkdir -p data/profilingresults
 
 echo "Starting Benchmarks..."
 
-for i in {100..2500..100}
+for i in {100..1500..100}
 do
     echo "Running Benchmark: $i Vehicles"
-    ./build_wsl/TrafficSimulator -OSMFile data/maps/Berkely.osm -NumberOfVehicles $i -FastSimulation true -SimulationTicks 1200 -BenchmarkOutput data/profilingresults/benchmark_$i.csv
+    ./build/TrafficSimulator -OSMFile data/maps/Berkely.osm -NumberOfVehicles $i -FastSimulation false -SimulationTicks 1200 -BenchmarkOutput data/profilingresults/benchmark_$i.csv
     echo "Done."
 done
 

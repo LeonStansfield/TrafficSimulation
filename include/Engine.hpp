@@ -35,7 +35,7 @@ public:
 
   void setMap(std::unique_ptr<Map> newMap);
   void addObject(std::unique_ptr<Object> object);
-  void run();
+  void run(int maxTicks = -1);
   void runFast(int ticks);
   void setBenchmarkOutput(const std::string& path) { config.benchmarkOutput = path; }
 

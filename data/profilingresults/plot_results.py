@@ -91,14 +91,18 @@ def plot_benchmarks():
         vehicle_count = df['VehicleCount'].iloc[0]
         # Smoothing
         smoothed = df['TotalTick'].rolling(window=60).mean()
-        plt.plot(df['Tick'], smoothed, label=f"{vehicle_count} Vehicles", color=colors[i])
+        
+        # Only put label for every 5th item to avoid crowding the legend
+        label = f"{vehicle_count} Vehicles" if i % 1 == 0 else "_nolegend_"
+        plt.plot(df['Tick'], smoothed, label=label, color=colors[i])
 
     plt.title("Time Series: Total Frame Time (Rolling Avg)")
     plt.xlabel("Tick")
     plt.ylabel("Time (ms)")
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
     plt.grid(True)
-    plt.savefig("benchmark_timeseries.png")
+    plt.savefig("benchmark_timeseries.png", bbox_inches='tight')
     print("Saved benchmark_timeseries.png")
     plt.close()
 
@@ -124,6 +128,9 @@ def plot_benchmarks():
         plt.text(bar.get_x() + bar.get_width()/2., height,
                  f'{height:.2f}',
                  ha='center', va='bottom')
+                 
+    # Add a buffer to the top so labels aren't cut off
+    plt.ylim(0, max(avg_total) * 1.15)
 
     # Subplot 2: Component Breakdown (Stacked)
     plt.subplot(2, 1, 2)
@@ -144,6 +151,11 @@ def plot_benchmarks():
     plt.title("Average Component Times per Vehicle Count (Stacked)")
     plt.xlabel("Number of Vehicles")
     plt.ylabel("Time (ms)")
+    
+    # Calculate max height across all stacks and add 15% buffer
+    max_height = max([q + v + r for q, v, r in zip(avg_quadtree, avg_vehicles, avg_render)])
+    plt.ylim(0, max_height * 1.15)
+    
     plt.legend()
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 

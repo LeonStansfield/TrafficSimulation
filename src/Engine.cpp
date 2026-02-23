@@ -22,8 +22,19 @@ void Engine::addObject(std::unique_ptr<Object> object) {
   simulation.addObject(std::move(object));
 }
 
-void Engine::run() {
+void Engine::run(int maxTicks) {
+  if (!config.benchmarkOutput.empty()) {
+    Benchmarker::Get().BeginSession(config.benchmarkOutput);
+  }
+
+  int currentTick = 0;
+
   while (!WindowShouldClose()) {
+    if (!config.benchmarkOutput.empty() && !isPaused) {
+      Benchmarker::Get().Start("TotalTick");
+    } else if (!config.benchmarkOutput.empty() && isPaused) {
+      Benchmarker::Get().Start("TotalTick");
+    }
 
     // Input Handling
     input.handleInput(renderer.getCamera(), simulation);
@@ -54,7 +65,23 @@ void Engine::run() {
     // config
     gui.draw(simulation, input, renderer, *this);
 
+    if (!config.benchmarkOutput.empty()) {
+      Benchmarker::Get().Stop("TotalTick");
+      if (!isPaused) {
+        Benchmarker::Get().WriteFrame(currentTick);
+        currentTick++;
+        if (maxTicks > 0 && currentTick >= maxTicks) {
+          renderer.endDrawing();
+          break;
+        }
+      }
+    }
+
     renderer.endDrawing();
+  }
+
+  if (Benchmarker::Get().IsActive()) {
+    Benchmarker::Get().EndSession();
   }
 }
 
@@ -65,7 +92,7 @@ void Engine::runFast(int ticks) {
   }
 
   if (!config.benchmarkOutput.empty()) {
-      Benchmarker::Get().BeginSession(config.benchmarkOutput);
+    Benchmarker::Get().BeginSession(config.benchmarkOutput);
   }
 
   const float FIXED_DELTA_TIME = 1.0f / 60.0f;
@@ -75,15 +102,15 @@ void Engine::runFast(int ticks) {
       std::cout << "\rSimulation progress: " << (i * 100 / ticks) << "%"
                 << std::flush;
     }
-    
+
     Benchmarker::Get().Start("TotalTick");
     simulation.update(FIXED_DELTA_TIME);
     Benchmarker::Get().Stop("TotalTick");
-    
+
     Benchmarker::Get().WriteFrame(i);
   }
   std::cout << "\rSimulation progress: 100%." << std::endl;
-  
+
   Benchmarker::Get().EndSession();
 }
 
