@@ -1,6 +1,6 @@
 #include "Simulation.hpp"
-#include "Vehicle.hpp"
 #include "Benchmarker.hpp"
+#include "Vehicle.hpp"
 #include <iostream>
 #include <random>
 #include <time.h>
@@ -55,7 +55,7 @@ void Simulation::update(float deltaTime) {
     for (const auto &obj : objects) {
       Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
       if (v) {
-        v->update(quadtree.get(), deltaTime);
+        v->update(useQuadtree ? quadtree.get() : nullptr, objects, deltaTime);
       } else {
         obj->update(deltaTime);
       }
@@ -93,7 +93,8 @@ void Simulation::update(float deltaTime) {
         if (v) {
           // Safe to read quadtree (read-only) and update vehicle (exclusive to
           // this thread)
-          v->update(this->quadtree.get(), deltaTime);
+          v->update(this->useQuadtree ? this->quadtree.get() : nullptr,
+                    this->objects, deltaTime);
         } else {
           obj->update(deltaTime);
         }

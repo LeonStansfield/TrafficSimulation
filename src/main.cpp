@@ -107,12 +107,15 @@ void printUsage(const char *progName) {
             << std::endl;
   std::cerr << "  -BenchmarkOutput <path>   Path to output CSV benchmark file."
             << std::endl;
+  std::cerr << "  -UseQuadtree <bool>       Whether to use the Quadtree for "
+               "collision checking."
+            << std::endl;
   std::cerr << std::endl;
   std::cerr << "Example (Config): " << progName << " -ConfigFile config.ini"
             << std::endl;
   std::cerr << "Example (Manual): " << progName
             << " -OSMFile data/MyMap.osm -NumberOfVehicles 500 -FastSimulation "
-               "true -SimulationTicks 50000"
+               "true -SimulationTicks 50000 -UseQuadtree false"
             << std::endl;
 }
 
@@ -127,6 +130,7 @@ int main(int argc, char *argv[]) {
   bool fastMode = false;
   int numTicks = 18000;
   std::string benchmarkOutput = "";
+  bool useQuadtree = true;
 
   std::map<std::string, std::string> args = parseCmdLine(argc, argv);
 
@@ -157,6 +161,9 @@ int main(int argc, char *argv[]) {
     if (args.count("-BenchmarkOutput")) {
       benchmarkOutput = args["-BenchmarkOutput"];
     }
+    if (args.count("-UseQuadtree")) {
+      useQuadtree = stringToBool(args["-UseQuadtree"]);
+    }
   } catch (const std::exception &e) {
     std::cerr << "Error parsing command-line arguments: " << e.what()
               << std::endl;
@@ -177,6 +184,8 @@ int main(int argc, char *argv[]) {
   std::cout << "Map: " << mapFile << std::endl;
   std::cout << "Vehicles: " << numVehicles << std::endl;
   std::cout << "Fast Mode: " << (fastMode ? "True" : "False") << std::endl;
+  std::cout << "Use Quadtree: " << (useQuadtree ? "True" : "False")
+            << std::endl;
   if (fastMode) {
     std::cout << "Ticks: " << numTicks << std::endl;
     if (!benchmarkOutput.empty()) {
@@ -187,7 +196,8 @@ int main(int argc, char *argv[]) {
 
   try {
     std::cout << "Initializing engine..." << std::endl;
-    Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles);
+    Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles,
+                  useQuadtree);
 
     if (!benchmarkOutput.empty()) {
       engine.setBenchmarkOutput(benchmarkOutput);

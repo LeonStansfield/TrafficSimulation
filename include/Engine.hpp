@@ -20,11 +20,12 @@ private:
     std::string mapFile;
     int numVehicles;
     std::string benchmarkOutput;
+    bool useQuadtree;
   } config;
 
 public:
   Engine(int width, int height, const char *title, std::string mapFile,
-         int numVehicles);
+         int numVehicles, bool useQuadtree = true);
   ~Engine();
 
   bool getPaused() const { return isPaused; }
@@ -37,7 +38,9 @@ public:
   void addObject(std::unique_ptr<Object> object);
   void run(int maxTicks = -1);
   void runFast(int ticks);
-  void setBenchmarkOutput(const std::string& path) { config.benchmarkOutput = path; }
+  void setBenchmarkOutput(const std::string &path) {
+    config.benchmarkOutput = path;
+  }
 
 public:
   void spawnVehicles(int count);

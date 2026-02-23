@@ -52,7 +52,9 @@ private:
 public:
   Vehicle(Vector2 pos, Vector2 sz, Color col, Map *m, Pathfinder *pf);
 
-  void update(Quadtree *quadtree, float deltaTime);
+  void update(Quadtree *quadtree,
+              const std::vector<std::unique_ptr<Object>> &allObjects,
+              float deltaTime);
   void update(float deltaTime) override;
   void draw(bool debug) override;
 

@@ -4,10 +4,12 @@
 #include <string>
 
 Engine::Engine(int width, int height, const char *title, std::string mapFile,
-               int numVehicles)
+               int numVehicles, bool useQuadtree)
     : renderer(width, height, title) {
   config.mapFile = mapFile;
   config.numVehicles = numVehicles;
+  config.useQuadtree = useQuadtree;
+  simulation.setUseQuadtree(useQuadtree);
 }
 
 Engine::~Engine() {}

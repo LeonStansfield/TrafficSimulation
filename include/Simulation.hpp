@@ -35,8 +35,12 @@ public:
 
 private:
   long tickCount = 0;
+  bool useQuadtree = true;
 
 public:
+  void setUseQuadtree(bool useIt) { useQuadtree = useIt; }
+  bool getUseQuadtree() const { return useQuadtree; }
+
   // Getters for Renderer / Input
   const Map *getMap() const { return map.get(); }
   const Quadtree *getQuadtree() const { return quadtree.get(); }

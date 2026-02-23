@@ -73,10 +73,10 @@ Vehicle::Vehicle(Vector2 pos, Vector2 sz, Color col, Map *m, Pathfinder *pf)
       state = VehicleState::WAITING_JUNCTION;
     }
   } else {
-      // No map provided (testing mode), become inert
-      currentSpeed = 0.0f;
-      velocity = {0, 0};
-      state = VehicleState::WAITING_JUNCTION;
+    // No map provided (testing mode), become inert
+    currentSpeed = 0.0f;
+    velocity = {0, 0};
+    state = VehicleState::WAITING_JUNCTION;
   }
 }
 
@@ -101,7 +101,9 @@ void Vehicle::updateStats(float deltaTime) {
   }
 }
 
-void Vehicle::update(Quadtree *quadtree, float deltaTime) {
+void Vehicle::update(Quadtree *quadtree,
+                     const std::vector<std::unique_ptr<Object>> &allObjects,
+                     float deltaTime) {
   updateStats(deltaTime);
 
   // Path & Junction Logic
@@ -145,7 +147,21 @@ void Vehicle::update(Quadtree *quadtree, float deltaTime) {
       Rectangle queryBox = {junctionPos.x - checkRadius,
                             junctionPos.y - checkRadius, checkRadius * 2.0f,
                             checkRadius * 2.0f};
-      auto nearby = quadtree->query(queryBox);
+      std::vector<Vehicle *> nearby;
+      if (quadtree) {
+        nearby = quadtree->query(queryBox);
+      } else {
+        for (const auto &obj : allObjects) {
+          Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
+          if (v && v != this) {
+            Vector2 p = v->getPosition();
+            if (p.x >= queryBox.x && p.x <= queryBox.x + queryBox.width &&
+                p.y >= queryBox.y && p.y <= queryBox.y + queryBox.height) {
+              nearby.push_back(v);
+            }
+          }
+        }
+      }
 
       for (Vehicle *other : nearby) {
         if (other == this)
@@ -246,7 +262,22 @@ void Vehicle::update(Quadtree *quadtree, float deltaTime) {
   Rectangle queryBox = {position.x - vehicleLookAhead / 2.0f,
                         position.y - vehicleLookAhead / 2.0f, vehicleLookAhead,
                         vehicleLookAhead};
-  auto nearby = quadtree->query(queryBox);
+  std::vector<Vehicle *> nearby;
+  if (quadtree) {
+    nearby = quadtree->query(queryBox);
+  } else {
+    for (const auto &obj : allObjects) {
+      Vehicle *v = dynamic_cast<Vehicle *>(obj.get());
+      if (v && v != this) {
+        Vector2 p = v->getPosition();
+        if (p.x >= queryBox.x && p.x <= queryBox.x + queryBox.width &&
+            p.y >= queryBox.y && p.y <= queryBox.y + queryBox.height) {
+          nearby.push_back(v);
+        }
+      }
+    }
+  }
+
   Vehicle *leadVehicle = nullptr;
   float closestDistSqr = FLT_MAX;
 
