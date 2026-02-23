@@ -1,8 +1,18 @@
-graph LR
-
-    Node1((1)) -- "A (One way road)" --> Node2((2))
-
-    %% Roads B and C already follow this rule
-    Node2((2)) -- "B (Forward)" --> Node3((3))
-    Node3((3)) -- "C (Backward)" --> Node2((2))
+%%{init: {'theme': 'neutral', 'themeVariables': { 'background': 'transparent' }}}%%
+flowchart TD
+    OSM[".osm / .pbf File"] --> Handler[MapHandler: Libosmium]
     
+    subgraph Parsing_Logic ["Data Extraction Layer"]
+        direction TB
+        
+        %% Node Logic
+        Handler -- "Nodes" --> StoreNodes[Filter Coordinates]
+        
+        %% Way Logic (Stacked below)
+        Handler -- "Ways" --> Filter["Filter: 'highway' tags"]
+        Filter -- "Metadata" --> Meta[Extract Speed, Lanes, One-Way]
+    end
+    
+    %% Convergence
+    StoreNodes --> Graph[(Directed Graph State)]
+    Meta --> Graph

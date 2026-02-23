@@ -1,17 +1,29 @@
-graph TD
-    subgraph Initialization
-        A[Load config.txt] --> B[Initialize Raylib Window]
-        B --> C[Load OSM Map Data]
-        C --> D[Initialize Thread Pool]
+graph LR
+    %% Set the overall flow to Left-to-Right
+    
+    subgraph Initialization ["Initialization"]
+        direction TB
+        A[Load config.txt] --> B[Raylib Window]
+        B --> C[OSM Map Data]
+        C --> D[Thread Pool]
         D --> E[Spawn Vehicles]
     end
 
-    subgraph System_Tick [Continuous Loop]
-        F[Handle User Input] --> H[Parallel Update: Vehicle Logic]
-        H --> I[Barrier Synchronization]
+    %% Connect the two blocks horizontally
+    Initialization ==> System_Tick
+
+    subgraph System_Tick ["System_Tick"]
+        direction TB
+        F[Handle Input] --> H[Parallel Update]
+        H --> I[Barrier Sync]
         I --> J[Rebuild Quadtree]
-        J --> K[Draw Map & Vehicles]
-        K --> L[Draw GUI Overlay]
-        L --> F
+        J --> K[Draw Frame]
+        K --> L[Draw GUI]
+        
+        %% The loopback line
+        L -.-> F
     end
-    E --> F
+
+    %% Styling to make it clean for light theme
+    style Initialization fill:#f9f9f9,stroke:#333
+    style System_Tick fill:#fdfdfd,stroke:#333
