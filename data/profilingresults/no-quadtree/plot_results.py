@@ -70,7 +70,7 @@ def plot_benchmarks():
     plt.plot(vehicle_counts, avg_quadtree, marker='^', label='Quadtree Build', linestyle='--')
     plt.plot(vehicle_counts, avg_render, marker='x', label='Render Time', linestyle=':')
 
-    plt.title("Average Frame Time vs Vehicle Count")
+    plt.title("Average Frame Time vs Vehicle Count (Quadtree NOT used by agents)")
     plt.xlabel("Number of Vehicles")
     plt.ylabel("Average Time (ms)")
     plt.legend()

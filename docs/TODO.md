@@ -18,3 +18,8 @@ Bugs:
 optimisations and improvements:
  - [x] Parallelize/optimise vehicle behavior
  - [ ] Parallelize Quadtree
+
+Benchmarks:
+ - [x] Comparison of computation time of different numbers of vehicles WITH and WITHOUT quadtree
+ - [ ] Comparison of computation time on different thread counts
+ - [ ] Comparison of computation time of renderer on different map sizes WITH and WITHOUT render batching

@@ -3,7 +3,7 @@
 # Keys and values are separated by '='.
 
 OSMFile = ../data/maps/Berkely.osm
-NumberOfVehicles = 150
+NumberOfVehicles = 200
 FastSimulation = true
-SimulationTicks = 2500
+SimulationTicks = 5000
 #BenchmarkOutput = benchmarks/results.csv
