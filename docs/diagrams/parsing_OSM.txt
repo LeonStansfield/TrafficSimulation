@@ -1,0 +1,11 @@
+flowchart LR
+    OSM[".osm / .pbf File"] --> Handler[MapHandler: Libosmium]
+    
+    subgraph Parsing_Logic
+        Handler -- Nodes --> StoreNodes[Filter Coordinates]
+        Handler -- Ways --> Filter[Filter: 'highway' tags]
+    end
+    
+    StoreNodes --> Graph[(Directed Graph State)]
+    Filter -- Metadata --> Metadata[Extract Speed, Lanes, One-Way]
+    Metadata --> Graph

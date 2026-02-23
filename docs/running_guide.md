@@ -32,6 +32,17 @@ SimulationTicks = 20000
 - ConfigFile: Path to the config file to be used for the simulation. (str, eg: "../data/config.txt")
 - BenchmarkOutput: Path to the benchmark output file to be used for the simulation. (str, eg: "../data/profilingresults/benchmarks.csv")
 
+### Running Unit Tests
+
+To verify the integrity of the core components (Quadtree, Pathfinder, Map, Vehicle), run the integrated test suite:
+
+1.  Navigate to the build directory:
+    `cd build`
+2.  Run the tests using CTest:
+    `ctest --output-on-failure`
+
+This will execute all registered tests and report any failures.
+
 ### Benchmarking Tutorial
 The system includes a benchmarking tool to analyze performance. To use this, you can run a simulation with `FastSimulation` enabled and specify an output file for the benchmark using the `BenchmarkOutput` argument.eg:
 ```bash

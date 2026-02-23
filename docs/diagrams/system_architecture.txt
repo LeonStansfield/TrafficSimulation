@@ -1,0 +1,17 @@
+graph TD
+    subgraph Initialization
+        A[Load config.txt] --> B[Initialize Raylib Window]
+        B --> C[Load OSM Map Data]
+        C --> D[Initialize Thread Pool]
+        D --> E[Spawn Vehicles]
+    end
+
+    subgraph System_Tick [Continuous Loop]
+        F[Handle User Input] --> H[Parallel Update: Vehicle Logic]
+        H --> I[Barrier Synchronization]
+        I --> J[Rebuild Quadtree]
+        J --> K[Draw Map & Vehicles]
+        K --> L[Draw GUI Overlay]
+        L --> F
+    end
+    E --> F

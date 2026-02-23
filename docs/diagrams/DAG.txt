@@ -1,0 +1,8 @@
+graph LR
+
+    Node1((1)) -- "A (One way road)" --> Node2((2))
+
+    %% Roads B and C already follow this rule
+    Node2((2)) -- "B (Forward)" --> Node3((3))
+    Node3((3)) -- "C (Backward)" --> Node2((2))
+    

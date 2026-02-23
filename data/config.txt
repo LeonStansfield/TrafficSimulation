@@ -2,8 +2,8 @@
 # Lines starting with # are comments and will be ignored.
 # Keys and values are separated by '='.
 
-OSMFile = ../data/maps/GlocesterRoadNorth.osm
-NumberOfVehicles = 100
-#FastSimulation = true
-#SimulationTicks = 18000
+OSMFile = ../data/maps/Berkely.osm
+NumberOfVehicles = 150
+FastSimulation = true
+SimulationTicks = 2500
 #BenchmarkOutput = benchmarks/results.csv

@@ -1,0 +1,17 @@
+graph TD
+    Start((Start Frame T)) --> Dispatch[Dispatch N Vehicles to Thread Pool]
+    
+    subgraph Parallel_Processing [Parallel Worker Threads]
+        direction LR
+        P1[Logic V1]
+        P2[Logic V2]
+        PN[Logic V...N]
+    end
+    
+    Dispatch --> P1 & P2 & PN
+    
+    P1 & P2 & PN --> Barrier{Barrier Sync}
+    
+    Barrier -->|All Completed| Quadtree[Rebuild Quadtree for T+1]
+    Quadtree --> Junction[Update Junction Stats]
+    Junction --> End((End Frame T))

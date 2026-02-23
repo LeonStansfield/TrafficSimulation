@@ -1,0 +1,12 @@
+stateDiagram-v2
+    [*] --> DRIVING
+    
+    DRIVING --> BRAKING : Proximity to Vehicle / Sharp Curve
+    BRAKING --> DRIVING : Path Clear / Speed Low
+    
+    DRIVING --> WAITING_JUNCTION : Arrive at Intersection
+    BRAKING --> WAITING_JUNCTION : Arrive at Intersection
+    
+    WAITING_JUNCTION --> DRIVING : Safe to Proceed / Yield Complete
+    
+    WAITING_JUNCTION --> [*] : Destination Reached
