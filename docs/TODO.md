@@ -22,4 +22,11 @@ optimisations and improvements:
 Benchmarks:
  - [x] Comparison of computation time of different numbers of vehicles WITH and WITHOUT quadtree
  - [ ] Comparison of computation time on different thread counts
- - [ ] Comparison of computation time of renderer on different map sizes WITH and WITHOUT render batching
+ - [ ] Comparison of computation time of renderer on different map sizes WITH and WITHOUT render batching!!!
+
+Report:
+ - [ ] Label new screenshots with captions
+ - [ ] Find new diagram to demonstrate emergent behaviour
+ - [ ] Complete map scaling benchmarks
+ - [ ] Implement this in production/ evaluation section
+ - [ ] Write conclusion section.
