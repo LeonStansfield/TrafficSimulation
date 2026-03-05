@@ -18,7 +18,7 @@ bool stringToBool(std::string str) {
 // Parses a simple key = value config file
 bool parseConfigFile(const std::string &path, std::string &mapFile,
                      int &numVehicles, bool &fastMode, int &numTicks,
-                     std::string &benchmarkOutput) {
+                     std::string &benchmarkOutput, int &maxRoads) {
   std::ifstream file(path);
   if (!file.is_open()) {
     std::cerr << "Error: Could not open config file: " << path << std::endl;
@@ -61,6 +61,8 @@ bool parseConfigFile(const std::string &path, std::string &mapFile,
         numTicks = std::stoi(value);
       } else if (key == "BenchmarkOutput") {
         benchmarkOutput = value;
+      } else if (key == "MaxRoadsToLoad") {
+        maxRoads = std::stoi(value);
       }
     } catch (const std::exception &e) {
       std::cerr << "Warning: Failed to parse config line: " << line << " ("
@@ -107,6 +109,9 @@ void printUsage(const char *progName) {
             << std::endl;
   std::cerr << "  -BenchmarkOutput <path>   Path to output CSV benchmark file."
             << std::endl;
+  std::cerr
+      << "  -MaxRoadsToLoad <int>     Limit number of roads parsed from map."
+      << std::endl;
   std::cerr << std::endl;
   std::cerr << "Example (Config): " << progName << " -ConfigFile config.ini"
             << std::endl;
@@ -127,6 +132,7 @@ int main(int argc, char *argv[]) {
   bool fastMode = false;
   int numTicks = 18000;
   std::string benchmarkOutput = "";
+  int maxRoads = 0;
 
   std::map<std::string, std::string> args = parseCmdLine(argc, argv);
 
@@ -135,7 +141,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Loading configuration from: " << args["-ConfigFile"]
               << std::endl;
     if (!parseConfigFile(args["-ConfigFile"], mapFile, numVehicles, fastMode,
-                         numTicks, benchmarkOutput)) {
+                         numTicks, benchmarkOutput, maxRoads)) {
       return 1; // Error already printed by parser
     }
   }
@@ -156,6 +162,9 @@ int main(int argc, char *argv[]) {
     }
     if (args.count("-BenchmarkOutput")) {
       benchmarkOutput = args["-BenchmarkOutput"];
+    }
+    if (args.count("-MaxRoadsToLoad")) {
+      maxRoads = std::stoi(args["-MaxRoadsToLoad"]);
     }
   } catch (const std::exception &e) {
     std::cerr << "Error parsing command-line arguments: " << e.what()
@@ -183,6 +192,9 @@ int main(int argc, char *argv[]) {
       std::cout << "Benchmark Output: " << benchmarkOutput << std::endl;
     }
   }
+  if (maxRoads > 0) {
+    std::cout << "Max Roads Limit: " << maxRoads << std::endl;
+  }
   std::cout << "---------------------------" << std::endl;
 
   try {
@@ -194,7 +206,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Loading map..." << std::endl;
-    engine.setMap(std::make_unique<Map>(mapFile.c_str()));
+    engine.setMap(std::make_unique<Map>(mapFile.c_str(), maxRoads));
 
     std::cout << "Spawning vehicles..." << std::endl;
     engine.spawnVehicles(numVehicles);

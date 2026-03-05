@@ -29,6 +29,7 @@ class MapHandler : public osmium::handler::Handler {
 public:
   std::map<long, Vector2> &nodes;
   std::vector<WayData> &ways;
+  int maxRoads;
 
   const std::set<std::string> drivable_tags = {
       "motorway",      "trunk",        "primary",        "secondary",
@@ -36,8 +37,8 @@ public:
       "trunk_link",    "primary_link", "secondary_link", "tertiary_link",
       "living_street", "service"};
 
-  MapHandler(std::map<long, Vector2> &n, std::vector<WayData> &w)
-      : nodes(n), ways(w) {}
+  MapHandler(std::map<long, Vector2> &n, std::vector<WayData> &w, int mRoads)
+      : nodes(n), ways(w), maxRoads(mRoads) {}
 
   void node(const osmium::Node &node) {
     nodes[static_cast<long>(node.id())] = {
@@ -46,6 +47,10 @@ public:
   }
 
   void way(const osmium::Way &way) {
+    if (maxRoads > 0 && ways.size() >= static_cast<size_t>(maxRoads)) {
+      return;
+    }
+
     const char *highway_tag = way.tags().get_value_by_key("highway");
 
     if (highway_tag && drivable_tags.count(highway_tag)) {
@@ -241,12 +246,12 @@ void Map::addRoad(const Road &road) {
   }
 }
 
-Map::Map(const char *filename) {
+Map::Map(const char *filename, int maxRoads) {
   std::vector<WayData> ways_temp;
 
   try {
     osmium::io::Reader reader{filename, osmium::io::read_meta::no};
-    MapHandler handler(nodes, ways_temp);
+    MapHandler handler(nodes, ways_temp, maxRoads);
     osmium::apply(reader, handler);
     reader.close();
 

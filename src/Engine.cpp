@@ -25,6 +25,7 @@ void Engine::addObject(std::unique_ptr<Object> object) {
 void Engine::run(int maxTicks) {
   if (!config.benchmarkOutput.empty()) {
     Benchmarker::Get().BeginSession(config.benchmarkOutput);
+    SetTargetFPS(0); // Uncap FPS for max throughput benchmarking
   }
 
   int currentTick = 0;
@@ -59,11 +60,19 @@ void Engine::run(int maxTicks) {
     // Draw
     renderer.beginDrawing();
 
+    if (!config.benchmarkOutput.empty()) {
+      Benchmarker::Get().Start("Render");
+    }
+
     renderer.drawSimulation(simulation, input);
 
     // We pass *this (Engine) to Gui so it can access/modify pause state and get
     // config
     gui.draw(simulation, input, renderer, *this);
+
+    if (!config.benchmarkOutput.empty()) {
+      Benchmarker::Get().Stop("Render");
+    }
 
     if (!config.benchmarkOutput.empty()) {
       Benchmarker::Get().Stop("TotalTick");

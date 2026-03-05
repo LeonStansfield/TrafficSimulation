@@ -103,7 +103,7 @@ private:
 
 public:
   Map();
-  Map(const char *filename);
+  Map(const char *filename, int maxRoads = 0);
   void addIntersection(const Intersection &intersection);
   void addRoad(const Road &road);
   void draw(DrawMode mode);

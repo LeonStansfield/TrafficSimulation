@@ -13,6 +13,7 @@ Renderer::Renderer(int width, int height, const char *title)
     std::cerr << "FATAL: Failed to initialize Raylib window." << std::endl;
     throw std::runtime_error("Failed to initialize window");
   }
+  // Default FPS cap; can be overridden later
   SetTargetFPS(60);
 
   // Font Loading
