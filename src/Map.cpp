@@ -544,27 +544,22 @@ void Map::draw(DrawMode mode) {
       }
     }
 
-    // Draw all collected vertices in two batches
-    rlDrawRenderBatchActive(); // Process any pending batches
-
-    // Batch draw roads
+    // Unbatched draw roads
     if (!roadLineVerts.empty()) {
-      rlBegin(RL_LINES);
-      rlColor4ub(GRAY.r, GRAY.g, GRAY.b, GRAY.a);
-      for (const auto &vert : roadLineVerts) {
-        rlVertex2f(vert.x, vert.y);
+      for (size_t i = 0; i < roadLineVerts.size(); i += 2) {
+        DrawLineV(roadLineVerts[i], roadLineVerts[i + 1], GRAY);
+        rlDrawRenderBatchActive(); // Defeat Raylib auto-batching by forcing an
+                                   // immediate GPU draw
       }
-      rlEnd();
     }
 
-    // Batch draw arrows
+    // Unbatched draw arrows
     if (!arrowLineVerts.empty()) {
-      rlBegin(RL_LINES);
-      rlColor4ub(LIGHTGRAY.r, LIGHTGRAY.g, LIGHTGRAY.b, LIGHTGRAY.a);
-      for (const auto &vert : arrowLineVerts) {
-        rlVertex2f(vert.x, vert.y);
+      for (size_t i = 0; i < arrowLineVerts.size(); i += 2) {
+        DrawLineV(arrowLineVerts[i], arrowLineVerts[i + 1], LIGHTGRAY);
+        rlDrawRenderBatchActive(); // Defeat Raylib auto-batching by forcing an
+                                   // immediate GPU draw
       }
-      rlEnd();
     }
   }
 
