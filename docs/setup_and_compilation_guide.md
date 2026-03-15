@@ -6,7 +6,7 @@ Clone the required libraries into the libs directory of the project.
 `cd libs`
 
 ### Clone the required repositories
-`git clone https://github.com/raysan5/raylib.git`
+`git clone --branch 5.5 --depth 1 https://github.com/raysan5/raylib.git`
 `git clone https://github.com/osmcode/libosmium.git`
 `git clone https://github.com/mapbox/protozero.git`
 
