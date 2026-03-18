@@ -1,0 +1,47 @@
+graph TD
+    %% Global Styles for a clean, square look
+    style Engine stroke:#333,stroke-width:2px
+    style GUI stroke:#333,stroke-width:2px
+    style Renderer stroke:#333,stroke-width:2px
+    style Input stroke:#333,stroke-width:2px
+    style Sim stroke:#333,stroke-width:2px
+    style Map stroke:#333,stroke-width:2px
+    style Spatial stroke:#333,stroke-width:2px
+    style Agents stroke:#333,stroke-width:2px
+    style TP stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+
+    subgraph Top [Core Engine]
+        Engine[Engine Module]
+    end
+
+    subgraph UI_View [Presentation Layer]
+        direction LR
+        GUI[GUI Module]
+        Renderer[Renderer]
+        Input[Input Controller]
+    end
+
+    subgraph Core_Logic [Simulation Layer]
+        direction TB
+        Sim[Simulation Engine]
+        Map[Map & Road Data]
+        Spatial[Quadtree Index]
+        Agents[Vehicle Agents]
+    end
+
+    subgraph Hardware [Infrastructure]
+        TP[Thread Pool]
+    end
+
+    %% Relationships and Ownership
+    Engine --> UI_View
+    Engine --> Core_Logic
+
+    %% Decoupling: Presentation reads from Core
+    UI_View -.->|Reads State| Core_Logic
+    
+    %% Internal Simulation Structure
+    Sim --- Map
+    Sim --- Spatial
+    Sim --- Agents
+    Core_Logic -.->|Parallel Tasks| TP
