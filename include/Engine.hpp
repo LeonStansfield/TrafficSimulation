@@ -32,6 +32,7 @@ public:
   void togglePaused() { isPaused = !isPaused; }
 
   const ConfigInfo &getConfig() const { return config; }
+  Simulation &getSimulation() { return simulation; }
 
   void setMap(std::unique_ptr<Map> newMap);
   void addObject(std::unique_ptr<Object> object);

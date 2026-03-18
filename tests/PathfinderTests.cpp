@@ -95,3 +95,34 @@ TEST_F(PathfinderTest, InvalidIntersection) {
   std::vector<const Road *> path = pathfinder->findPath(1, 99);
   EXPECT_TRUE(path.empty());
 }
+
+// Verify disabled road is excluded from pathfinding
+TEST_F(PathfinderTest, DisabledRoadExcluded) {
+  // Disable road 1->2; path from 1 to 2 should now be impossible.
+  const auto &roads = map->getRoads();
+  for (const auto &r : roads) {
+    if (r.fromIntersectionId == 1 && r.toIntersectionId == 2) {
+      map->setRoadEnabled(&r, false);
+      break;
+    }
+  }
+  std::vector<const Road *> path = pathfinder->findPath(1, 2);
+  EXPECT_TRUE(path.empty());
+}
+
+// Verify re-enabling a road restores pathfinding through it
+TEST_F(PathfinderTest, ReenabledRoadAvailable) {
+  const auto &roads = map->getRoads();
+  const Road *target = nullptr;
+  for (const auto &r : roads) {
+    if (r.fromIntersectionId == 1 && r.toIntersectionId == 2) {
+      target = &r;
+      break;
+    }
+  }
+  ASSERT_NE(target, nullptr);
+  map->setRoadEnabled(target, false);
+  map->setRoadEnabled(target, true);
+  std::vector<const Road *> path = pathfinder->findPath(1, 2);
+  EXPECT_FALSE(path.empty());
+}

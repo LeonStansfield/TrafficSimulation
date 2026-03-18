@@ -4,6 +4,8 @@ Features:
  - [x] Multi-lane behaviour
  - [ ] Traffic lights
  - [x] Roundabouts
+ - [ ] Disable/enable roads
+ - [ ] Press H for help in UI, which shows all controls
  - [ ] New Config File stuff:
     - [ ] Simulation ticks per second
     - [ ] Left/Right hand drive

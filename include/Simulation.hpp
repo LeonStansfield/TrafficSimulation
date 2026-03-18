@@ -48,4 +48,9 @@ public:
   // external
   Map *getMapMutable() { return map.get(); }
   Pathfinder *getPathfinder() { return pathfinder.get(); }
+
+  void setRoadEnabled(const Road *road, bool enabled) {
+    if (map)
+      map->setRoadEnabled(road, enabled);
+  }
 };

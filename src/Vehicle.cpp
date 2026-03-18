@@ -104,6 +104,17 @@ void Vehicle::updateStats(float deltaTime) {
 void Vehicle::update(Quadtree *quadtree, float deltaTime) {
   updateStats(deltaTime);
 
+  // Reroute if the current road has been disabled since last update.
+  const Road *currentRoad = getRoad();
+  if (currentRoad && currentRoad->disabled.load()) {
+    requestNewPath();
+    if (currentRoadPoints.empty()) {
+      velocity = {0, 0};
+      currentSpeed = 0;
+      return;
+    }
+  }
+
   // Path & Junction Logic
   // Check if we are at the end of the current road
   if (currentRoadPoints.empty() ||

@@ -572,22 +572,45 @@ void Map::draw(DrawMode mode) {
   for (const auto &pair : intersections) {
     Color intersectionColor = BLUE;
     if (mode == DrawMode::HEATMAP) {
-      // Optional: Color intersections by visits?
-      // For now just keep them blue or hide them?
-      // Let's keep them small and blue or maybe Gray
       intersectionColor = DARKGRAY;
     }
     DrawCircleV(pair.second.position, 3.0f, intersectionColor);
   }
+
+  // Draw disabled road overlays above all other road rendering.
+  rlDrawRenderBatchActive();
+  rlBegin(RL_LINES);
+  rlColor4ub(200, 40, 40, 180);
+  for (const auto &road : roads) {
+    if (!road.disabled.load())
+      continue;
+    for (size_t i = 1; i < road.points.size(); ++i) {
+      rlVertex2f(road.points[i - 1].x, road.points[i - 1].y);
+      rlVertex2f(road.points[i].x, road.points[i].y);
+    }
+  }
+  rlEnd();
 }
 
 const std::vector<Road> &Map::getRoads() const { return roads; }
+
+void Map::setRoadEnabled(const Road *road, bool enabled) {
+  // Roads are stored by value in a vector; find by address to mutate.
+  for (auto &r : roads) {
+    if (&r == road) {
+      r.disabled.store(!enabled);
+      return;
+    }
+  }
+}
 
 const Road *Map::getClosestRoad(Vector2 position) const {
   const Road *closestRoad = nullptr;
   float minDistanceSq = std::numeric_limits<float>::max();
 
   for (const auto &road : roads) {
+    if (road.disabled.load())
+      continue; // Disabled roads are not valid targets for vehicles.
     for (size_t i = 0; i < road.points.size() - 1; ++i) {
       Vector2 p1 = road.points[i];
       Vector2 p2 = road.points[i + 1];

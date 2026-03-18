@@ -67,6 +67,10 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
     contentHeight += 15;      // Divider
     contentHeight += 10 + 20; // Title
     contentHeight += lineSpacing * 3;
+    if (selectionType == SelectionType::ROAD) {
+      contentHeight += lineSpacing; // Status row
+      contentHeight += lineSpacing; // Keyboard hint
+    }
   }
 
   int totalHeight = padding * 2 + contentHeight;
@@ -264,6 +268,17 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
         drawText("Type:", cursorX, cursorY, fontSize, labelColor);
         drawText(r->isOneWay ? "One Way" : "Two Way", cursorX + valueOffset,
                  cursorY - 2, fontSize, valueColor);
+        cursorY += lineSpacing;
+
+        bool isDisabled = r->disabled.load();
+        drawText("Status:", cursorX, cursorY, fontSize, labelColor);
+        drawText(isDisabled ? "DISABLED" : "ENABLED",
+                 cursorX + valueOffset, cursorY - 2, fontSize,
+                 isDisabled ? RED : GREEN);
+        cursorY += lineSpacing;
+
+        drawText("[E] toggle", cursorX, cursorY, fontSize,
+                 {100, 100, 100, 200});
       }
     }
   }

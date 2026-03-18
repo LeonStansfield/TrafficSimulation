@@ -28,6 +28,11 @@ void InputController::handleInput(Camera2D &camera, Simulation &simulation) {
       camera.zoom = zoomIncrement;
   }
 
+  // Toggle selected road enabled/disabled state (E key)
+  if (IsKeyPressed(KEY_E) && selectionType == SelectionType::ROAD && selectedRoad) {
+    simulation.setRoadEnabled(selectedRoad, selectedRoad->disabled.load());
+  }
+
   // Interaction / Selection Logic
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);

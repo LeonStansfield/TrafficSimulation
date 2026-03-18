@@ -121,8 +121,9 @@ void Renderer::drawSimulation(const Simulation &simulation,
     else if (selectionType == SelectionType::ROAD) {
       const Road *r = input.getSelectedRoad();
       if (r) {
+        Color highlightColor = r->disabled.load() ? Fade(ORANGE, 0.8f) : Fade(YELLOW, 0.6f);
         for (size_t j = 1; j < r->points.size(); ++j) {
-          DrawLineEx(r->points[j - 1], r->points[j], 6.0f, Fade(YELLOW, 0.6f));
+          DrawLineEx(r->points[j - 1], r->points[j], 6.0f, highlightColor);
         }
       }
     }

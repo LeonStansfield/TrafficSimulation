@@ -87,6 +87,9 @@ std::vector<const Road *> Pathfinder::findPath(long startIntersectionId,
     }
 
     for (const Road *road : outgoingRoads.at(currentId)) {
+      if (road->disabled.load())
+        continue; // Disabled roads are excluded from pathfinding.
+
       long neighborId = road->toIntersectionId;
 
       // Cost function: cost = road->length / road->speedLimit;

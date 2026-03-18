@@ -83,6 +83,33 @@ struct Road {
   int lanes;
   bool isRoundabout;
   mutable RoadStats stats;
+  mutable std::atomic<bool> disabled{false};
+
+  Road() = default;
+
+  Road(const Road &other)
+      : fromIntersectionId(other.fromIntersectionId),
+        toIntersectionId(other.toIntersectionId), points(other.points),
+        isOneWay(other.isOneWay), length(other.length),
+        speedLimit(other.speedLimit), lanes(other.lanes),
+        isRoundabout(other.isRoundabout), stats(other.stats),
+        disabled(other.disabled.load()) {}
+
+  Road &operator=(const Road &other) {
+    if (this != &other) {
+      fromIntersectionId = other.fromIntersectionId;
+      toIntersectionId = other.toIntersectionId;
+      points = other.points;
+      isOneWay = other.isOneWay;
+      length = other.length;
+      speedLimit = other.speedLimit;
+      lanes = other.lanes;
+      isRoundabout = other.isRoundabout;
+      stats = other.stats;
+      disabled.store(other.disabled.load());
+    }
+    return *this;
+  }
 };
 
 enum class DrawMode { NORMAL, HEATMAP, DEBUG };
@@ -107,6 +134,7 @@ public:
   void addIntersection(const Intersection &intersection);
   void addRoad(const Road &road);
   void draw(DrawMode mode);
+  void setRoadEnabled(const Road *road, bool enabled);
 
   float getWorldWidth() const { return worldWidth; }
   float getWorldHeight() const { return worldHeight; }
