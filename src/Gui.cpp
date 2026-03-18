@@ -53,6 +53,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
 
   // Pause Button Height
   contentHeight += 30 + 10;
+  contentHeight += lineSpacing; // [H] help hint
 
   // Debug Stats
   if (currentMode == DrawMode::DEBUG) {
@@ -141,6 +142,10 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
            RAYWHITE);
 
   cursorY += 30 + 10;
+
+  // Help hint
+  drawText("[H] help", cursorX, cursorY, fontSize - 2.0f, {100, 100, 100, 200});
+  cursorY += lineSpacing;
 
   // --- Debug Stats ---
   if (currentMode == DrawMode::DEBUG) {
@@ -280,6 +285,44 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
         drawText("[E] toggle", cursorX, cursorY, fontSize,
                  {100, 100, 100, 200});
       }
+    }
+  }
+
+  // --- Help Panel ---
+  if (input.getShowHelp()) {
+    const int hBoxWidth = 360;
+    const int hBoxX = boxX + width + 20;
+    const int hBoxY = boxY;
+
+    struct HelpEntry { const char *key; const char *desc; };
+    const HelpEntry entries[] = {
+      { "WASD / Arrows", "Pan camera"         },
+      { "Scroll",        "Zoom in / out"       },
+      { "Left click",    "Select element"      },
+      { "Q",             "Cycle render mode"   },
+      { "E",             "Enable / disable road" },
+      { "Space / btn",   "Pause / resume"      },
+      { "H",             "Toggle this panel"   },
+    };
+    const int numEntries = sizeof(entries) / sizeof(entries[0]);
+
+    int hContentHeight = 10 + 20 + 8                  // Title
+                       + lineSpacing * numEntries;     // Entries
+    int hTotalHeight = padding * 2 + hContentHeight;
+
+    DrawRectangle(hBoxX, hBoxY, hBoxWidth, hTotalHeight, panelColor);
+    DrawRectangleLines(hBoxX, hBoxY, hBoxWidth, hTotalHeight, borderColor);
+
+    float hX = hBoxX + padding;
+    float hY = hBoxY + padding;
+
+    drawText("CONTROLS", hX, hY, fontSize, accentColor);
+    hY += 28;
+
+    for (const auto &e : entries) {
+      drawText(e.key,  hX,              hY, fontSize - 1.0f, labelColor);
+      drawText(e.desc, hX + 140,        hY, fontSize - 1.0f, valueColor);
+      hY += lineSpacing;
     }
   }
 }

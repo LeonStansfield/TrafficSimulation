@@ -4,7 +4,7 @@
 
 InputController::InputController()
     : selectionType(SelectionType::NONE), selectedVehicle(nullptr),
-      selectedIntersection(nullptr), selectedRoad(nullptr) {}
+      selectedIntersection(nullptr), selectedRoad(nullptr), showHelp(false) {}
 
 void InputController::handleInput(Camera2D &camera, Simulation &simulation) {
   // Camera controls
@@ -31,6 +31,11 @@ void InputController::handleInput(Camera2D &camera, Simulation &simulation) {
   // Toggle selected road enabled/disabled state (E key)
   if (IsKeyPressed(KEY_E) && selectionType == SelectionType::ROAD && selectedRoad) {
     simulation.setRoadEnabled(selectedRoad, selectedRoad->disabled.load());
+  }
+
+  // Toggle help overlay (H key)
+  if (IsKeyPressed(KEY_H)) {
+    showHelp = !showHelp;
   }
 
   // Interaction / Selection Logic

@@ -13,6 +13,7 @@ public:
   const Object *selectedVehicle;
   const Intersection *selectedIntersection;
   const Road *selectedRoad;
+  bool showHelp;
 
 public:
   InputController();
@@ -26,4 +27,5 @@ public:
     return selectedIntersection;
   }
   const Road *getSelectedRoad() const { return selectedRoad; }
+  bool getShowHelp() const { return showHelp; }
 };
