@@ -78,9 +78,9 @@ void InputController::handleInput(Camera2D &camera, Simulation &simulation) {
       }
     }
 
-    // 3. Try to select a road
+    // 3. Try to select a road (includeDisabled=true so disabled roads can still be selected and re-enabled)
     if (selectionType == SelectionType::NONE) {
-      const Road *closestRoad = map->getClosestRoad(mouseWorldPos);
+      const Road *closestRoad = map->getClosestRoad(mouseWorldPos, true);
       if (closestRoad && !closestRoad->points.empty()) {
         bool inRange = false;
         for (const auto &p : closestRoad->points) {

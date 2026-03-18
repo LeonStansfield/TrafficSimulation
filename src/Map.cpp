@@ -604,12 +604,12 @@ void Map::setRoadEnabled(const Road *road, bool enabled) {
   }
 }
 
-const Road *Map::getClosestRoad(Vector2 position) const {
+const Road *Map::getClosestRoad(Vector2 position, bool includeDisabled) const {
   const Road *closestRoad = nullptr;
   float minDistanceSq = std::numeric_limits<float>::max();
 
   for (const auto &road : roads) {
-    if (road.disabled.load())
+    if (!includeDisabled && road.disabled.load())
       continue; // Disabled roads are not valid targets for vehicles.
     for (size_t i = 0; i < road.points.size() - 1; ++i) {
       Vector2 p1 = road.points[i];

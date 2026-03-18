@@ -141,7 +141,7 @@ public:
   Vector2 convertLatLonToWorld(Vector2 latLon);
 
   const std::vector<Road> &getRoads() const;
-  const Road *getClosestRoad(Vector2 position) const;
+  const Road *getClosestRoad(Vector2 position, bool includeDisabled = false) const;
   const Intersection *getClosestIntersection(Vector2 position) const;
 
   long getRandomIntersectionId(std::mt19937 &rng) const;
