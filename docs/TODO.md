@@ -7,7 +7,7 @@ Features:
  - [x] Disable/enable roads
  - [x] Press H for help in UI, which shows all controls
  - [ ] New Config File stuff:
-    - [ ] Simulation ticks per second
+    - [x] Simulation ticks per second
     - [ ] Left/Right hand drive
     - [x] MaxRoadsToLoad limit for scaling benchmark
  - [x] Unit Tests

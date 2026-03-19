@@ -18,7 +18,7 @@ bool stringToBool(std::string str) {
 // Parses a simple key = value config file
 bool parseConfigFile(const std::string &path, std::string &mapFile,
                      int &numVehicles, bool &fastMode, int &numTicks,
-                     std::string &benchmarkOutput, int &maxRoads) {
+                     std::string &benchmarkOutput, int &maxRoads, int &ticksPerSecond) {
   std::ifstream file(path);
   if (!file.is_open()) {
     std::cerr << "Error: Could not open config file: " << path << std::endl;
@@ -63,6 +63,8 @@ bool parseConfigFile(const std::string &path, std::string &mapFile,
         benchmarkOutput = value;
       } else if (key == "MaxRoadsToLoad") {
         maxRoads = std::stoi(value);
+      } else if (key == "TicksPerSecond") {
+        ticksPerSecond = std::stoi(value);
       }
     } catch (const std::exception &e) {
       std::cerr << "Warning: Failed to parse config line: " << line << " ("
@@ -103,6 +105,8 @@ void printUsage(const char *progName) {
             << std::endl;
   std::cerr << "  -NumberOfVehicles <int>   Number of vehicles to spawn."
             << std::endl;
+  std::cerr << "  -TicksPerSecond <int>     Target simulation ticks per second."
+            << std::endl;
   std::cerr << "  -FastSimulation <bool>    Enable fast-forward mode."
             << std::endl;
   std::cerr << "  -SimulationTicks <int>    Number of ticks for fast-forward."
@@ -133,6 +137,7 @@ int main(int argc, char *argv[]) {
   int numTicks = 18000;
   std::string benchmarkOutput = "";
   int maxRoads = 0;
+  int ticksPerSecond = 60;
 
   std::map<std::string, std::string> args = parseCmdLine(argc, argv);
 
@@ -141,7 +146,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Loading configuration from: " << args["-ConfigFile"]
               << std::endl;
     if (!parseConfigFile(args["-ConfigFile"], mapFile, numVehicles, fastMode,
-                         numTicks, benchmarkOutput, maxRoads)) {
+                         numTicks, benchmarkOutput, maxRoads, ticksPerSecond)) {
       return 1; // Error already printed by parser
     }
   }
@@ -166,6 +171,9 @@ int main(int argc, char *argv[]) {
     if (args.count("-MaxRoadsToLoad")) {
       maxRoads = std::stoi(args["-MaxRoadsToLoad"]);
     }
+    if (args.count("-TicksPerSecond")) {
+      ticksPerSecond = std::stoi(args["-TicksPerSecond"]);
+    }
   } catch (const std::exception &e) {
     std::cerr << "Error parsing command-line arguments: " << e.what()
               << std::endl;
@@ -185,6 +193,7 @@ int main(int argc, char *argv[]) {
   std::cout << "--- Simulation Settings ---" << std::endl;
   std::cout << "Map: " << mapFile << std::endl;
   std::cout << "Vehicles: " << numVehicles << std::endl;
+  std::cout << "Ticks Per Second: " << ticksPerSecond << std::endl;
   std::cout << "Fast Mode: " << (fastMode ? "True" : "False") << std::endl;
   if (fastMode) {
     std::cout << "Ticks: " << numTicks << std::endl;
@@ -199,7 +208,7 @@ int main(int argc, char *argv[]) {
 
   try {
     std::cout << "Initializing engine..." << std::endl;
-    Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles);
+    Engine engine(1280, 720, "Traffic Simulation", mapFile, numVehicles, ticksPerSecond);
 
     if (!benchmarkOutput.empty()) {
       engine.setBenchmarkOutput(benchmarkOutput);

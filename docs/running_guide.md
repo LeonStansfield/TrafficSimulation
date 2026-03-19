@@ -20,6 +20,7 @@ Example config file:
 
 OSMFile = data/StNewlynEastMap.osm
 NumberOfVehicles = 500
+TicksPerSecond = 30
 FastSimulation = true
 SimulationTicks = 20000
 ```
@@ -27,6 +28,7 @@ SimulationTicks = 20000
 ### List of arguments
 - OSMFile: Path to the OSM file to be used for the simulation. (str, eg: "../data/StNewlynEastMap.osm")
 - NumberOfVehicles: Number of vehicles to be used for the simulation. (int, eg: 500)
+- TicksPerSecond: Target simulation ticks per second, clamped between 5 and 120. (int, default: 60)
 - FastSimulation: Whether to use fast simulation mode. (bool, eg: true)
 - SimulationTicks: Number of ticks to be used for the simulation. (int, eg: 2000)
 - ConfigFile: Path to the config file to be used for the simulation. (str, eg: "../data/config.txt")
@@ -53,3 +55,14 @@ The output CSV contains timing data for each section of the simulation per tick:
 ```csv
 Tick,TotalTick,Quadtree,Vehicles,Render
 ```
+
+### Interactive GUI and Controls
+
+The simulation features an interactive graphical user interface. You can view all available controls in-game by pressing **`H`** to open the Help Panel.
+
+**Road Disabling Feature:**
+You can dynamically modify the traffic network while the simulation is running:
+1. **Select a road** by left-clicking on it (Selected roads highlight blue/red).
+2. **Press `E`** to toggle its enabled/disabled state. 
+
+When a road is disabled, it is immediately removed from the Pathfinder's available network. Any vehicles currently scheduled to navigate through that road will dynamically recalculate their paths in real-time to bypass the closure!

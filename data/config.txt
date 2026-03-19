@@ -4,6 +4,7 @@
 
 OSMFile = ../data/maps/Berkely.osm
 NumberOfVehicles = 125
-#FastSimulation = true
-SimulationTicks = 5000
+TicksPerSecond = 15
+FastSimulation = true
+SimulationTicks = 8000
 #BenchmarkOutput = benchmarks/results.csv

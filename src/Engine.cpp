@@ -2,12 +2,14 @@
 #include "Benchmarker.hpp"
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 Engine::Engine(int width, int height, const char *title, std::string mapFile,
-               int numVehicles)
+               int numVehicles, int ticksPerSecond)
     : renderer(width, height, title) {
   config.mapFile = mapFile;
   config.numVehicles = numVehicles;
+  config.ticksPerSecond = std::clamp(ticksPerSecond, 5, 120);
 }
 
 Engine::~Engine() {}
@@ -54,7 +56,19 @@ void Engine::run(int maxTicks) {
 
     // Update
     if (!isPaused) {
-      simulation.update(GetFrameTime());
+      if (!config.benchmarkOutput.empty()) {
+        simulation.update(config.ticksPerSecond > 0 ? 1.0f / config.ticksPerSecond : 1.0f / 60.0f);
+      } else {
+        static float accumulator = 0.0f;
+        float fixedDt = config.ticksPerSecond > 0 ? 1.0f / config.ticksPerSecond : 1.0f / 60.0f;
+        accumulator += GetFrameTime();
+        if (accumulator > 0.25f) accumulator = 0.25f; // Prevent spiral of death
+        
+        while (accumulator >= fixedDt) {
+          simulation.update(fixedDt);
+          accumulator -= fixedDt;
+        }
+      }
     }
 
     // Draw
@@ -104,7 +118,7 @@ void Engine::runFast(int ticks) {
     Benchmarker::Get().BeginSession(config.benchmarkOutput);
   }
 
-  const float FIXED_DELTA_TIME = 1.0f / 60.0f;
+  const float FIXED_DELTA_TIME = config.ticksPerSecond > 0 ? 1.0f / config.ticksPerSecond : 1.0f / 60.0f;
 
   for (int i = 0; i < ticks; ++i) {
     if (i % (ticks / 100) == 0) {

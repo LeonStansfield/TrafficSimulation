@@ -20,11 +20,12 @@ private:
     std::string mapFile;
     int numVehicles;
     std::string benchmarkOutput;
+    int ticksPerSecond = 60;
   } config;
 
 public:
   Engine(int width, int height, const char *title, std::string mapFile,
-         int numVehicles);
+         int numVehicles, int ticksPerSecond = 60);
   ~Engine();
 
   bool getPaused() const { return isPaused; }
