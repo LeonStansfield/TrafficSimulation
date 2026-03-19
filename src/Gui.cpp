@@ -36,13 +36,13 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
   const float fontSize = 16.0f;
   const int valueOffset = 140;
 
-  Color panelColor = {20, 25, 30, 230};
-  Color borderColor = {60, 70, 80, 255};
-  Color labelColor = GRAY;
-  Color valueColor = RAYWHITE;
-  Color accentColor = SKYBLUE;
-  Color buttonColor = {40, 45, 50, 255};
-  Color buttonHoverColor = {60, 65, 70, 255};
+  Color panelColor = {220, 220, 225, 230};
+  Color borderColor = DARKGRAY;
+  Color labelColor = DARKGRAY;
+  Color valueColor = BLACK;
+  Color accentColor = DARKBLUE;
+  Color buttonColor = {200, 200, 205, 255};
+  Color buttonHoverColor = {180, 180, 185, 255};
 
   // Calculate dynamic height
   int contentHeight = 0;
@@ -107,7 +107,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
     break;
   case DrawMode::HEATMAP:
     modeText = "HEATMAP";
-    modeColor = RED;
+    modeColor = MAROON;
     break;
   }
 
@@ -119,7 +119,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
   if (engine.getPaused()) {
     drawText("PAUSED", cursorX + valueOffset, cursorY, fontSize, ORANGE);
   } else {
-    drawText("RUNNING", cursorX + valueOffset, cursorY, fontSize, GREEN);
+    drawText("RUNNING", cursorX + valueOffset, cursorY, fontSize, DARKGREEN);
   }
   cursorY += lineSpacing + 5;
 
@@ -139,7 +139,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
   Vector2 textSize = MeasureTextEx(font, btnText, fontSize, 1.0f);
   drawText(btnText, buttonRect.x + (buttonRect.width - textSize.x) / 2,
            buttonRect.y + (buttonRect.height - textSize.y) / 2, fontSize,
-           RAYWHITE);
+           BLACK);
 
   cursorY += 30 + 10;
 
@@ -279,7 +279,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
         drawText("Status:", cursorX, cursorY, fontSize, labelColor);
         drawText(isDisabled ? "DISABLED" : "ENABLED",
                  cursorX + valueOffset, cursorY - 2, fontSize,
-                 isDisabled ? RED : GREEN);
+                 isDisabled ? MAROON : DARKGREEN);
         cursorY += lineSpacing;
 
         drawText("[E] toggle", cursorX, cursorY, fontSize,
@@ -302,7 +302,7 @@ void Gui::draw(const Simulation &simulation, const InputController &input,
       { "Q",             "Cycle render mode"   },
       { "E",             "Enable / disable road" },
       { "Space / btn",   "Pause / resume"      },
-      { "H",             "Toggle this panel"   },
+      { "H",             "Toggle help panel"   },
     };
     const int numEntries = sizeof(entries) / sizeof(entries[0]);
 

@@ -39,7 +39,7 @@ Renderer::~Renderer() {
 
 void Renderer::beginDrawing() {
   BeginDrawing();
-  ClearBackground(DARKGRAY);
+  ClearBackground(LIGHTGRAY);
 }
 
 void Renderer::endDrawing() { EndDrawing(); }
@@ -95,7 +95,7 @@ void Renderer::drawSimulation(const Simulation &simulation,
       if (v) {
         // Draw selection ring
         DrawRing(v->getPosition(), v->getSize().x / 2.0f + 2.0f,
-                 v->getSize().x / 2.0f + 5.0f, 0, 360, 0, GOLD);
+                 v->getSize().x / 2.0f + 5.0f, 0, 360, 0, DARKBLUE);
 
         // Draw Path
         const std::vector<const Road *> &path = v->getPath();
@@ -111,7 +111,7 @@ void Renderer::drawSimulation(const Simulation &simulation,
           if (r) {
             for (size_t j = 1; j < r->points.size(); ++j) {
               DrawLineEx(r->points[j - 1], r->points[j], 4.0f,
-                         Fade(GOLD, 0.5f));
+                         Fade(DARKBLUE, 0.5f));
             }
           }
         }
@@ -121,7 +121,7 @@ void Renderer::drawSimulation(const Simulation &simulation,
     else if (selectionType == SelectionType::ROAD) {
       const Road *r = input.getSelectedRoad();
       if (r) {
-        Color highlightColor = r->disabled.load() ? Fade(ORANGE, 0.8f) : Fade(YELLOW, 0.6f);
+        Color highlightColor = r->disabled.load() ? Fade(RED, 0.8f) : Fade(BLUE, 0.6f);
         for (size_t j = 1; j < r->points.size(); ++j) {
           DrawLineEx(r->points[j - 1], r->points[j], 6.0f, highlightColor);
         }
@@ -131,8 +131,8 @@ void Renderer::drawSimulation(const Simulation &simulation,
     else if (selectionType == SelectionType::INTERSECTION) {
       const Intersection *i = input.getSelectedIntersection();
       if (i) {
-        DrawCircleV(i->position, 8.0f, YELLOW);
-        DrawRing(i->position, 8.0f, 12.0f, 0, 360, 0, ORANGE);
+        DrawCircleV(i->position, 8.0f, MAGENTA);
+        DrawRing(i->position, 8.0f, 12.0f, 0, 360, 0, PURPLE);
       }
     }
   }

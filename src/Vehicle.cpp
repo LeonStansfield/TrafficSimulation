@@ -417,10 +417,10 @@ void Vehicle::draw(bool debug) {
   if (debug) {
     switch (state) {
     case VehicleState::DRIVING:
-      color = GREEN;
+      color = DARKGREEN;
       break;
     case VehicleState::BRAKING:
-      color = RED;
+      color = MAROON;
       break;
     case VehicleState::WAITING_JUNCTION:
       color = ORANGE;

@@ -442,12 +442,11 @@ void Map::draw(DrawMode mode) {
     // DEBUG VIEW: Draw the *actual* vehicle paths (offset lines)
     for (const auto &road : roads) {
       Color roadColor =
-          road.isOneWay ? ColorAlpha(SKYBLUE, 0.7f) : ColorAlpha(WHITE, 0.7f);
+          road.isOneWay ? DARKBLUE : DARKGRAY;
       for (size_t i = 0; i < road.points.size(); ++i) {
-        DrawCircleV(road.points[i], 1.5f, roadColor);
+        DrawCircleV(road.points[i], 2.5f, roadColor);
         if (i > 0) {
-          DrawLineV(road.points[i - 1], road.points[i],
-                    ColorAlpha(roadColor, 0.3f));
+          DrawLineEx(road.points[i - 1], road.points[i], 1.0f, roadColor);
         }
       }
     }
@@ -477,19 +476,19 @@ void Map::draw(DrawMode mode) {
 
       Color color;
       if (congestion >= 1.0f) {
-        color = GREEN;
+        color = DARKGREEN;
       } else if (congestion <= 0.0f) {
         color = RED;
       } else if (congestion >= 0.5f) {
         // Lerp Orange -> Green
         // t goes from 0.0 (at 0.5) to 1.0 (at 1.0)
         float t = (congestion - 0.5f) * 2.0f;
-        color = lerpColor(ORANGE, GREEN, t);
+        color = lerpColor(ORANGE, DARKGREEN, t);
       } else {
         // Lerp Red -> Orange
         // t goes from 0.0 (at 0.0) to 1.0 (at 0.5)
         float t = congestion * 2.0f;
-        color = lerpColor(RED, ORANGE, t);
+        color = lerpColor(MAROON, ORANGE, t);
       }
 
       // Draw road segments
@@ -550,7 +549,7 @@ void Map::draw(DrawMode mode) {
     // Batch draw roads
     if (!roadLineVerts.empty()) {
       rlBegin(RL_LINES);
-      rlColor4ub(GRAY.r, GRAY.g, GRAY.b, GRAY.a);
+      rlColor4ub(DARKGRAY.r, DARKGRAY.g, DARKGRAY.b, DARKGRAY.a);
       for (const auto &vert : roadLineVerts) {
         rlVertex2f(vert.x, vert.y);
       }
@@ -560,7 +559,7 @@ void Map::draw(DrawMode mode) {
     // Batch draw arrows
     if (!arrowLineVerts.empty()) {
       rlBegin(RL_LINES);
-      rlColor4ub(LIGHTGRAY.r, LIGHTGRAY.g, LIGHTGRAY.b, LIGHTGRAY.a);
+      rlColor4ub(DARKBLUE.r, DARKBLUE.g, DARKBLUE.b, DARKBLUE.a);
       for (const auto &vert : arrowLineVerts) {
         rlVertex2f(vert.x, vert.y);
       }
@@ -570,9 +569,9 @@ void Map::draw(DrawMode mode) {
 
   // Draw intersections on top of everything
   for (const auto &pair : intersections) {
-    Color intersectionColor = BLUE;
+    Color intersectionColor = DARKBLUE;
     if (mode == DrawMode::HEATMAP) {
-      intersectionColor = DARKGRAY;
+      intersectionColor = BLACK;
     }
     DrawCircleV(pair.second.position, 3.0f, intersectionColor);
   }
