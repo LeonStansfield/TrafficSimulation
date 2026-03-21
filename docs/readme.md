@@ -60,7 +60,7 @@ A traffic simulation engine using C++ and raylib for my final year university pr
 
 * **`Interactivity`**: The simulation allows users to interact with the environment using the mouse.
 
-    * **`Selection System`**: Users can click to select vehicles, roads, or intersections. A custom UI panel displays relevant statistics for the selected object, such as a vehicle's current and average speed, or a road's traffic count.
+    * **`Selection System`**: Users can click to select vehicles, roads, or intersections. A custom UI panel displays relevant statistics for the selected object, such as a vehicle's current and average speed, or a road's traffic count. Selected roads can be disabled and enabled, which removes them from the pathfinding network and forces vehicles to recalculate their paths.
 
     * **`Path Visualization`**: Selecting a vehicle renders its projected path as a ghost trail, visualizing the route it will take to its destination.
 

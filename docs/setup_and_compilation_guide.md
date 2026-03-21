@@ -21,4 +21,4 @@ Configure with CMake: Create a build directory and run CMake from it.
 `cmake ..`
 
 Compile the Project:
-`cmake --build .`
+`cmake --build . -j$(nproc)`

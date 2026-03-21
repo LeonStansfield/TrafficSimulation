@@ -1,10 +1,6 @@
 ## Running the Simulation
 
-After a successful compilation, the executable will be located in the build directory.
-
-`./TrafficSimulator OSMFile(str) NumberOfVehicles(int) FastSimulation(bool, optional) SimulationTicks(int, optional, only using if FastSimulation is true)`
-
-`./TrafficSimulator ConfigFile(str)`
+After a successful compilation, the executable will be located in the build directory. The excecutable can be run using the following arguments, or the arguments can be set in a config file, which is then passed as an argument.
 
 Examples:
 
@@ -18,11 +14,11 @@ Example config file:
 # Lines starting with # are comments and will be ignored.
 # Keys and values are separated by '='.
 
-OSMFile = data/StNewlynEastMap.osm
-NumberOfVehicles = 500
-TicksPerSecond = 30
+OSMFile = ../data/maps/Berkely.osm
+NumberOfVehicles = 125
+TicksPerSecond = 15
 FastSimulation = true
-SimulationTicks = 20000
+SimulationTicks = 8000
 ```
 
 ### List of arguments
@@ -32,7 +28,7 @@ SimulationTicks = 20000
 - FastSimulation: Whether to use fast simulation mode. (bool, eg: true)
 - SimulationTicks: Number of ticks to be used for the simulation. (int, eg: 2000)
 - ConfigFile: Path to the config file to be used for the simulation. (str, eg: "../data/config.txt")
-- BenchmarkOutput: Path to the benchmark output file to be used for the simulation. (str, eg: "../data/profilingresults/benchmarks.csv")
+- BenchmarkOutput: Path to the benchmark output file to be used for the simulation. (str, eg: "../data/profilingresults/benchmarks.csv"). If this has a value, the simulation will run using benchmarking mode.
 
 ### Running Unit Tests
 
@@ -45,7 +41,7 @@ To verify the integrity of the core components (Quadtree, Pathfinder, Map, Vehic
 
 This will execute all registered tests and report any failures.
 
-### Benchmarking Tutorial
+### Benchmarking
 The system includes a benchmarking tool to analyze performance. To use this, you can run a simulation with `FastSimulation` enabled and specify an output file for the benchmark using the `BenchmarkOutput` argument.eg:
 ```bash
 ./TrafficSimulator -OSMFile ../data/maps/StNewlynEastMap.osm -NumberOfVehicles 500 -FastSimulation true -SimulationTicks 1000 -BenchmarkOutput ../data/profilingresults/benchmarks.csv
@@ -63,6 +59,6 @@ The simulation features an interactive graphical user interface. You can view al
 **Road Disabling Feature:**
 You can dynamically modify the traffic network while the simulation is running:
 1. **Select a road** by left-clicking on it (Selected roads highlight blue/red).
-2. **Press `E`** to toggle its enabled/disabled state. 
+2. **Press `E`** to toggle its enabled/disabled state.
 
-When a road is disabled, it is immediately removed from the Pathfinder's available network. Any vehicles currently scheduled to navigate through that road will dynamically recalculate their paths in real-time to bypass the closure!
+When a road is disabled, it is removed from the Pathfinding network. Any vehicles currently scheduled to navigate through that road will dynamically recalculate their paths in real-time to bypass the closure!
