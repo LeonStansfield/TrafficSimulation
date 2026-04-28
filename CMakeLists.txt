@@ -10,7 +10,12 @@ option(BUILD_EXAMPLES "Build raylib examples" OFF)
 set(CUSTOMIZE_BUILD ON)
 set(PLATFORM "Desktop") # Force Desktop platform for Windows
 
+# --- External Dependencies via libs folder ---
 add_subdirectory(libs/raylib)
+
+# Header-only libraries: libosmium and protozero
+set(PROTOZERO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs/protozero/include)
+set(LIBOSMIUM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs/libosmium/include)
 
 # Find dependencies for libosmium
 find_package(ZLIB REQUIRED)
@@ -34,8 +39,8 @@ add_library(TrafficSimulatorLib STATIC
 
 target_include_directories(TrafficSimulatorLib PUBLIC
     include
-    libs/libosmium/include
-    libs/protozero/include
+    ${LIBOSMIUM_INCLUDE_DIR}
+    ${PROTOZERO_INCLUDE_DIR}
     ${BZIP2_INCLUDE_DIRS}
 )
 
